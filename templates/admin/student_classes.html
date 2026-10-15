@@ -1,0 +1,257 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Student Classes and Results{% endblock %}
+{% block page_name %}Student Classes and Results{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/student-management.css') }}">
+
+<style>
+.student-weekly {
+    white-space: pre-line;
+    line-height: 1.8;
+}
+
+.sd-page textarea {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid #dfe5ef;
+    border-radius: 10px;
+    background: #f4f7fb;
+    color: #24324a;
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+}
+</style>
+
+<div class="sd-page">
+
+    <div class="sd-list-heading">
+        <div class="sd-heading">
+            <h1>{{ student.name }}</h1>
+            <p class="sd-muted">
+                {{ student.student_no or 'No Student ID' }}
+                · Classes and semester results
+            </p>
+        </div>
+
+        <a class="sd-btn secondary"
+           href="{{ url_for('admin_portal.student_details') }}">
+            Back to students
+        </a>
+    </div>
+
+    <section class="sd-card">
+        <h2>Assign class</h2>
+
+        <p class="sd-muted">
+            Select a class created in Task → Class Setup.
+        </p>
+
+        <form method="post"
+              action="{{ url_for('admin_portal.assign_student_class', student_id=student.id) }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="sd-grid">
+                <label>
+                    Class
+                    <select id="assign-class"
+                            name="class_id"
+                            required>
+
+                        <option value="">Select class</option>
+
+                        {% for classroom in classes %}
+                        <option value="{{ classroom.id }}"
+                                data-semester="{{ classroom.semester }}"
+                                data-subject="{{ classroom.name }}"
+                                data-time="{{ classroom.class_time }}"
+                                data-teacher="{{ classroom.teacher_name }}">
+                            {{ classroom.code }}
+                            — {{ classroom.name }}
+                            — {{ classroom.semester }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+                <label>
+                    Semester
+                    <input id="assigned-semester" readonly>
+                </label>
+
+                <label>
+                    Subject
+                    <input id="assigned-subject" readonly>
+                </label>
+
+                <label>
+                    Teacher
+                    <input id="assigned-teacher" readonly>
+                </label>
+
+                <label style="grid-column:1 / -1;">
+                    Weekly class time
+                    <textarea id="assigned-time" readonly></textarea>
+                </label>
+            </div>
+
+            <button class="sd-btn"
+                    type="submit"
+                    {% if not classes %}disabled{% endif %}>
+                Save assignment
+            </button>
+
+        </form>
+
+        {% if not classes %}
+        <p class="sd-muted">
+            No available classes.
+            Add a class with a teacher in Task → Class Setup.
+        </p>
+        {% endif %}
+    </section>
+
+    {% for semester, rows in results|groupby('semester') %}
+    <section class="sd-card">
+        <h2>{{ semester }}</h2>
+
+        <div class="sd-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class / Subject</th>
+                        <th>Teacher</th>
+                        <th>Assessment</th>
+                        <th>Midterm</th>
+                        <th>Final</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.code }}</strong>
+                            <small>{{ row.name }}</small>
+                            <small class="student-weekly">{{ (row.class_time or 'Time not set')|replace(' | ', '\n') }}</small>
+                        </td>
+
+                        <td>
+                            {{ row.teacher_name }}
+                            {% if row.teacher_removed %}
+                            <small>Teacher assignment removed</small>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ row.assessment if row.assessment is not none else '—' }}
+                            / {{ row.assessment_max }}
+                        </td>
+
+                        <td>
+                            {{ row.mid if row.mid is not none else '—' }}
+                            / {{ row.mid_max }}
+                        </td>
+
+                        <td>
+                            {{ row.final if row.final is not none else '—' }}
+                            / {{ row.final_max }}
+                        </td>
+
+                        <td>
+                            {% if row.assessment is not none
+                                  and row.mid is not none
+                                  and row.final is not none %}
+                                {{ (row.assessment + row.mid + row.final)|round(2) }}
+                                /
+                                {{ row.assessment_max + row.mid_max + row.final_max }}
+                            {% else %}
+                                Pending
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.has_marks %}
+                            <button class="sd-btn secondary"
+                                    type="button"
+                                    disabled
+                                    title="Marks have already been entered">
+                                Locked
+                            </button>
+                            <small>Result entered</small>
+
+                            {% else %}
+                            <form method="post"
+                                  class="sd-remove-form"
+                                  action="{{ url_for('admin_portal.remove_student_class', student_id=student.id, class_id=row.id) }}">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button class="sd-btn danger"
+                                        type="submit">
+                                    Remove
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {% else %}
+    <section class="sd-card">
+        <p>No classes assigned yet.</p>
+    </section>
+    {% endfor %}
+
+</div>
+
+<script>
+(() => {
+    const select = document.getElementById("assign-class");
+
+    function updatePreview() {
+        const option = select.selectedOptions[0];
+
+        const fields = {
+            semester: "assigned-semester",
+            subject: "assigned-subject",
+            teacher: "assigned-teacher",
+            time: "assigned-time"
+        };
+
+        for (const [key, id] of Object.entries(fields)) {
+            let value = option?.dataset[key] || "";
+
+            if (key === "time") {
+                value = value.split(" | ").join("\n");
+            }
+
+            document.getElementById(id).value = value;
+        }
+    }
+
+    select.addEventListener("change", updatePreview);
+    updatePreview();
+})();
+</script>
+
+{% endblock %}

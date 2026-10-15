@@ -3,6 +3,96 @@
 {% block title %}Welcome · Smart Campus{% endblock %}
 
 {% block content %}
+
+<style>
+.home-flash-list {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 24px;
+}
+
+.home-flash {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding: 15px 20px;
+    border: 1px solid #dce5f0;
+    border-radius: 12px;
+    background: #f0f5ff;
+    color: #34558b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.home-flash-success {
+    background: #eaf8f0;
+    border-color: #c8ead7;
+    color: #176b49;
+}
+
+.home-flash-danger,
+.home-flash-error {
+    background: #fff0f2;
+    border-color: #f3cdd5;
+    color: #a52d45;
+}
+
+.home-flash-warning {
+    background: #fff8e6;
+    border-color: #f0dfae;
+    color: #805d18;
+}
+
+.home-flash-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.home-flash-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.home-flash-close:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+</style>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="home-flash-list">
+        {% for category, message in messages %}
+        <div class="home-flash home-flash-{{ category }}"
+             role="status">
+
+            <span>{{ message }}</span>
+
+            <button type="button"
+                    class="home-flash-close"
+                    aria-label="Close message">
+                <span aria-hidden="true">×</span>
+            </button>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
 <section class="portal-welcome">
     <span class="portal-tag">
         <span></span>
@@ -21,16 +111,17 @@
 
 <section class="portal-roles" aria-label="Choose your role">
 
-    <a
-        class="portal-role role-admin"
-        href="{{ url_for('login', role='admin') }}"
-    >
+    <a class="portal-role role-admin"
+       href="{{ url_for('login', role='admin') }}"
+       target="_self">
+
         <div class="role-top">
             <span class="role-icon" aria-hidden="true">⚙</span>
             <span class="role-number">01</span>
         </div>
 
         <span class="role-label">CAMPUS MANAGEMENT</span>
+
         <h2>Admin</h2>
 
         <p>
@@ -49,16 +140,17 @@
         </span>
     </a>
 
-    <a
-        class="portal-role role-teacher"
-        href="{{ url_for('login', role='teacher') }}"
-    >
+    <a class="portal-role role-teacher"
+       href="{{ url_for('login', role='teacher') }}"
+       target="_self">
+
         <div class="role-top">
             <span class="role-icon" aria-hidden="true">▤</span>
             <span class="role-number">02</span>
         </div>
 
         <span class="role-label">TEACHING WORKSPACE</span>
+
         <h2>Teacher</h2>
 
         <p>
@@ -77,16 +169,17 @@
         </span>
     </a>
 
-    <a
-        class="portal-role role-student"
-        href="{{ url_for('login', role='student') }}"
-    >
+    <a class="portal-role role-student"
+       href="{{ url_for('login', role='student') }}"
+       target="_self">
+
         <div class="role-top">
             <span class="role-icon" aria-hidden="true">✦</span>
             <span class="role-number">03</span>
         </div>
 
         <span class="role-label">YOUR LEARNING SPACE</span>
+
         <h2>Student</h2>
 
         <p>
@@ -110,8 +203,14 @@
 <div class="portal-bottom">
     <span>Everything for your class, in one place.</span>
 
-    <a href="{{ url_for('register') }}">
-        New student? Create an account →
-    </a>
 </div>
+
+<script>
+document.querySelectorAll(".home-flash-close").forEach(button => {
+    button.addEventListener("click", () => {
+        button.closest(".home-flash").remove();
+    });
+});
+</script>
+
 {% endblock %}

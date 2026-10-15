@@ -26,7 +26,10 @@ def database():
 
 def today():
     timezone = current_app.extensions["portal"]["timezone"]
-    return datetime.now(timezone).date().isoformat()
+
+    return datetime.now(
+        timezone
+    ).date().isoformat()
 
 
 def require(role):
@@ -55,8 +58,10 @@ def require(role):
 def class_context(db):
     classes = db.execute(
         """
-        SELECT * FROM teacher_classes
-        WHERE teacher_id=?
+        SELECT *
+        FROM teacher_classes
+        WHERE teacher_id = ?
+          AND teacher_removed = 0
         ORDER BY code
         """,
         (g.user["id"],),
@@ -71,13 +76,19 @@ def class_context(db):
     if selected:
         classroom = db.execute(
             """
-            SELECT * FROM teacher_classes
-            WHERE id=? AND teacher_id=?
+            SELECT *
+            FROM teacher_classes
+            WHERE id = ?
+              AND teacher_id = ?
+              AND teacher_removed = 0
             """,
-            (selected, g.user["id"]),
+            (
+                selected,
+                g.user["id"],
+            ),
         ).fetchone()
 
-        if not classroom:
+        if classroom is None:
             abort(404)
 
     return classes, classroom
@@ -90,15 +101,22 @@ def roster(db, classroom):
     return db.execute(
         """
         SELECT
-            u.id, u.name, u.email, u.student_no,
-            u.created_at, u.active,
-            m.assessment, m.mid, m.final
+            u.id,
+            u.name,
+            u.email,
+            u.student_no,
+            u.created_at,
+            u.active,
+            m.assessment,
+            m.mid,
+            m.final
         FROM teacher_enrolments e
-        JOIN users u ON u.id=e.student_id
+        JOIN users u
+            ON u.id = e.student_id
         LEFT JOIN teacher_marks m
-            ON m.class_id=e.class_id
-            AND m.student_id=e.student_id
-        WHERE e.class_id=?
+            ON m.class_id = e.class_id
+            AND m.student_id = e.student_id
+        WHERE e.class_id = ?
         ORDER BY u.name
         """,
         (classroom["id"],),
@@ -111,10 +129,16 @@ def score(text, maximum):
 
     try:
         value = float(text)
-    except (TypeError, ValueError):
-        raise ValueError("Enter a valid numeric mark.")
 
-    if not math.isfinite(value) or not 0 <= value <= maximum:
+    except (TypeError, ValueError):
+        raise ValueError(
+            "Enter a valid numeric mark."
+        )
+
+    if (
+        not math.isfinite(value)
+        or not 0 <= value <= maximum
+    ):
         raise ValueError(
             f"Mark must be between 0 and {maximum:g}."
         )
@@ -126,7 +150,10 @@ def init_view(app):
     @app.context_processor
     def shared_context():
         timezone = app.extensions["portal"]["timezone"]
-        return {"campus_timezone": timezone.key}
+
+        return {
+            "campus_timezone": timezone.key,
+        }
 
     @app.template_filter("campus_time")
     def campus_time(value):
@@ -136,5 +163,6 @@ def init_view(app):
         timezone = app.extensions["portal"]["timezone"]
 
         return datetime.fromtimestamp(
-            value, timezone
+            value,
+            timezone,
         ).strftime("%I:%M:%S %p")

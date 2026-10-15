@@ -16,6 +16,9 @@ def init_portals(app, connect_db, database, timezone):
 
     upgrade(connect_db, database)
     create_tables(connect_db)
+    from .admin.student_accounts import init_student_tables
+
+    init_student_tables(connect_db)
 
     from .common import init_view
 

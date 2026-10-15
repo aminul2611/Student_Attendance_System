@@ -528,7 +528,7 @@ def login(role=None):
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
-    flash("You have logged out.", "info")
+    flash("You have been logged out successfully.", "success")
 
     return redirect(url_for("index"))
 

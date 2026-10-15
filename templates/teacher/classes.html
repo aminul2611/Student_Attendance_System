@@ -4,6 +4,23 @@
 
 {% block content %}
 
+    {% if classroom %}
+<section class="panel">
+    <h2>Weekly Class Schedule</h2>
+
+    <p>
+        <strong>{{ classroom.code }}</strong>
+        — {{ classroom.name }}
+    </p>
+
+    <p>
+        Semester: {{ classroom.semester or 'Not set' }}
+    </p>
+
+    <div style="white-space:pre-line; line-height:1.9;">{{ (classroom.class_time or 'Weekly time not set')|replace(' | ', '\n') }}</div>
+</section>
+{% endif %}
+
 <h1>Daily Classes</h1>
 <p class="muted">Schedule sessions for your assigned classes.</p>
 

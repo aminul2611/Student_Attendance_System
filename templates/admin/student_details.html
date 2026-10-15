@@ -1,0 +1,379 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Student Details{% endblock %}
+{% block page_name %}Student Details{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/student-management.css') }}">
+
+<style>
+.sd-page.student-details-page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.student-details-page > .sd-heading {
+    order: 0;
+    margin-bottom: 0;
+}
+
+.student-details-page > .student-create {
+    order: 1;
+}
+
+.student-details-page > .student-list-panel {
+    order: 2;
+}
+
+.student-details-page > .sd-card {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Add student card */
+
+.sd-page details.student-create {
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #dcdffd;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(83, 74, 180, 0.06);
+}
+
+.sd-page details.student-create > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+    padding: 18px 24px;
+    list-style: none;
+    background: linear-gradient(
+        110deg,
+        #eaf0ff 0%,
+        #f2edff 65%,
+        #faf7ff 100%
+    );
+    color: #4145a5;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sd-page details.student-create > summary::-webkit-details-marker {
+    display: none;
+}
+
+.sd-page details.student-create > summary::marker {
+    content: "";
+}
+
+.sd-page .student-create-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: #6255dc;
+    color: #fff;
+    font-size: 23px;
+    font-weight: 400;
+    box-shadow: 0 4px 10px rgba(98, 85, 220, 0.18);
+}
+
+.sd-page details.student-create > summary::after {
+    content: "";
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    margin-left: auto;
+    border-right: 2px solid #7974b8;
+    border-bottom: 2px solid #7974b8;
+    transform: rotate(45deg);
+}
+
+.sd-page details.student-create[open] > summary {
+    border-bottom: 1px solid #e3e2fa;
+}
+
+.sd-page details.student-create[open] > summary::after {
+    transform: rotate(225deg);
+}
+
+.sd-page details.student-create > summary:hover {
+    background: #e9e6ff;
+}
+
+.sd-page details.student-create > summary:focus-visible {
+    outline: 3px solid #8074e8;
+    outline-offset: -4px;
+}
+
+.sd-page details.student-create > form {
+    margin: 0;
+    padding: 24px;
+}
+
+.sd-page .student-create .sd-grid {
+    margin: 0 0 22px;
+}
+
+.sd-page .student-create input:focus {
+    outline: none;
+    border-color: #8b80e8;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(98, 85, 220, 0.1);
+}
+
+.sd-page .student-create button[type="submit"] {
+    padding: 12px 20px;
+    background: #6255dc;
+    color: #fff;
+}
+
+.sd-page .student-create button[type="submit"]:hover {
+    background: #5143c7;
+}
+
+@media (max-width: 650px) {
+    .sd-page details.student-create > summary {
+        padding: 16px 18px;
+    }
+
+    .sd-page details.student-create > form {
+        padding: 18px;
+    }
+}
+</style>
+
+<div class="sd-page student-details-page">
+
+    <div class="sd-heading">
+        <h1>Student Details</h1>
+
+        <p class="sd-muted">
+            Manage student accounts, class assignments and results.
+        </p>
+    </div>
+
+    <details class="sd-card student-create">
+        <summary>
+            <span class="student-create-icon"
+                  aria-hidden="true">＋</span>
+            Add student
+        </summary>
+
+        <form method="post"
+              action="{{ url_for('admin_portal.create_student_account') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="sd-grid">
+
+                <label>
+                    Full name
+                    <input name="name"
+                           maxlength="100"
+                           autocomplete="name"
+                           required>
+                </label>
+
+                <label>
+                    Email
+                    <input type="email"
+                           name="email"
+                           maxlength="254"
+                           autocomplete="email"
+                           required>
+                </label>
+
+                <label>
+                    Student ID
+                    <input name="student_no"
+                           maxlength="100"
+                           required>
+                </label>
+
+                <label>
+                    Department
+                    <input name="department"
+                           maxlength="150"
+                           placeholder="Example: SWE">
+                </label>
+
+                <label>
+                    Phone
+                    <input type="tel"
+                           name="phone"
+                           maxlength="150"
+                           autocomplete="tel">
+                </label>
+
+                <label>
+                    Initial password
+                    <input type="password"
+                           name="new_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           required>
+                </label>
+
+                <label>
+                    Confirm password
+                    <input type="password"
+                           name="confirm_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           required>
+                </label>
+
+            </div>
+
+            <button class="sd-btn" type="submit">
+                Create student
+            </button>
+
+        </form>
+    </details>
+
+    <section class="sd-card student-list-panel">
+
+        <div class="sd-list-heading">
+            <div>
+                <h2>All students ({{ students|length }})</h2>
+
+                <p class="sd-muted">
+                    Browse and manage students.
+                </p>
+            </div>
+
+            <label class="sd-search">
+                Search
+                <input id="student-search"
+                       type="search"
+                       placeholder="Name, email, ID or department">
+            </label>
+        </div>
+
+        <div class="sd-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Details</th>
+                        <th>Account</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in students %}
+                    <tr data-student-row
+                        data-search="{{ student.name }} {{ student.email }} {{ student.student_no or '' }} {{ student.department }}">
+
+                        <td>
+                            <strong>{{ student.name }}</strong>
+
+                            <small>
+                                {{ student.student_no or 'No Student ID' }}
+                            </small>
+                        </td>
+
+                        <td>{{ student.email }}</td>
+
+                        <td>
+                            {{ student.department or '—' }}
+                        </td>
+
+                        <td>
+                            <a class="sd-btn secondary"
+                               href="{{ url_for('admin_portal.student_classes', student_id=student.id) }}">
+                                Details
+                            </a>
+                        </td>
+
+                        <td>
+                            <a class="sd-btn secondary"
+                               href="{{ url_for('admin_portal.student_account', student_id=student.id) }}">
+                                Settings
+                            </a>
+                        </td>
+
+                        <td>
+                            <form method="post"
+                                  class="sd-status-form"
+                                  action="{{ url_for('admin_portal.set_student_status', student_id=student.id) }}">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <input type="hidden"
+                                       name="active"
+                                       value="{{ '0' if student.active else '1' }}">
+
+                                <button type="submit"
+                                        class="sd-status {{ 'active' if student.active else 'inactive' }}"
+                                        aria-label="{{ 'Disable' if student.active else 'Enable' }} {{ student.name }}">
+                                    ● {{ 'Active' if student.active else 'Inactive' }}
+                                </button>
+                            </form>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                    <tr id="student-empty"
+                        {% if students %}hidden{% endif %}>
+                        <td colspan="6">
+                            No students found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+(() => {
+    const search = document.getElementById("student-search");
+    const empty = document.getElementById("student-empty");
+
+    function filterStudents() {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+
+        document.querySelectorAll("[data-student-row]").forEach(row => {
+            const text = (row.dataset.search || "").toLowerCase();
+
+            row.hidden = !text.includes(query);
+
+            if (!row.hidden) {
+                visible++;
+            }
+        });
+
+        empty.hidden = visible > 0;
+    }
+
+    search.addEventListener("input", filterStudents);
+    filterStudents();
+})();
+</script>
+
+{% endblock %}

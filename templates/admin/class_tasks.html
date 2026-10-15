@@ -1,0 +1,272 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Task{% endblock %}
+{% block page_name %}Task{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/student-management.css') }}">
+
+<style>
+.weekly-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 16px;
+}
+
+.weekly-times {
+    white-space: pre-line;
+    min-width: 240px;
+    line-height: 1.8;
+}
+
+@media (max-width: 700px) {
+    .weekly-row {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        border: 1px solid #e7ecf4;
+        border-radius: 12px;
+    }
+}
+</style>
+
+<div class="sd-page">
+
+    <div class="sd-heading">
+        <h1>Task</h1>
+        <p class="sd-muted">
+            Manage classes, teachers and weekly schedules.
+        </p>
+    </div>
+
+    <section class="sd-card">
+        <h2>Class Setup</h2>
+
+        <form method="post"
+              action="{{ url_for('admin_portal.create_student_class_setup') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="sd-grid">
+
+                <label>
+                    Class / Unique code
+                    <input name="class_name"
+                           maxlength="80"
+                           placeholder="Example: SWE-A-SE-SUM26"
+                           required>
+                </label>
+
+                <label>
+                    Semester
+                    <input name="semester"
+                           maxlength="80"
+                           placeholder="Example: Summer 2026"
+                           required>
+                </label>
+
+                <label>
+                    Subject name
+                    <input name="subject_name"
+                           maxlength="150"
+                           placeholder="Software Engineering"
+                           required>
+                </label>
+
+                <label>
+                    Teacher
+                    <select name="teacher_id" required>
+                        <option value="">Select teacher</option>
+
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}">
+                            {{ teacher.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+
+            </div>
+
+            <h2>Weekly class time</h2>
+
+            <p class="sd-muted">
+                These day and time slots repeat every week.
+            </p>
+
+            <div id="weekly-slots"></div>
+
+            <button class="sd-btn secondary"
+                    id="add-slot"
+                    type="button">
+                ＋ Add day/time
+            </button>
+
+            <div style="margin-top:24px;">
+                <button class="sd-btn"
+                        type="submit"
+                        {% if not teachers %}disabled{% endif %}>
+                    Save class
+                </button>
+            </div>
+
+            {% if not teachers %}
+            <p class="sd-muted">
+                Add or activate a teacher first.
+            </p>
+            {% endif %}
+
+        </form>
+    </section>
+
+    <section class="sd-card">
+        <h2>Saved classes ({{ class_setups|length }})</h2>
+
+        <p class="sd-muted">
+            Remove course stops new student assignments.
+            Existing assignments and results remain.
+        </p>
+
+        <div class="sd-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Semester</th>
+                        <th>Subject</th>
+                        <th>Weekly time</th>
+                        <th>Teacher</th>
+                        <th>Students</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for classroom in class_setups %}
+                    <tr>
+                        <td><strong>{{ classroom.code }}</strong></td>
+                        <td>{{ classroom.semester or '—' }}</td>
+                        <td>{{ classroom.name }}</td>
+
+                        <td class="weekly-times">{{ (classroom.class_time or 'Time not set')|replace(' | ', '\n') }}</td>
+
+                        <td>
+                            {% if classroom.teacher_removed %}
+                                Assignment removed
+                                <small>
+                                    Previous: {{ classroom.teacher_name }}
+                                </small>
+                            {% else %}
+                                {{ classroom.teacher_name }}
+                            {% endif %}
+                        </td>
+
+                        <td>{{ classroom.student_count }}</td>
+
+                        <td>
+                            <form method="post"
+                                  class="sd-remove-form"
+                                  action="{{ url_for('admin_portal.remove_class_setup', class_id=classroom.id) }}">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button class="sd-btn danger"
+                                        type="submit">
+                                    Remove course
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">No courses added yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<template id="weekly-slot-template">
+    <div class="weekly-row">
+
+        <label>
+            Day
+            <select name="weekday" required>
+                <option value="">Choose day</option>
+                <option value="0">Sunday / রবিবার</option>
+                <option value="1">Monday / সোমবার</option>
+                <option value="2">Tuesday / মঙ্গলবার</option>
+                <option value="3">Wednesday / বুধবার</option>
+                <option value="4">Thursday / বৃহস্পতিবার</option>
+                <option value="5">Friday / শুক্রবার</option>
+                <option value="6">Saturday / শনিবার</option>
+            </select>
+        </label>
+
+        <label>
+            Start time
+            <input type="time" name="start_time" required>
+        </label>
+
+        <label>
+            End time
+            <input type="time" name="end_time" required>
+        </label>
+
+        <button class="sd-btn danger remove-slot"
+                type="button"
+                aria-label="Remove this time slot">
+            Remove time
+        </button>
+
+    </div>
+</template>
+
+<script>
+(() => {
+    const container = document.getElementById("weekly-slots");
+    const template = document.getElementById("weekly-slot-template");
+    const addButton = document.getElementById("add-slot");
+
+    function updateButtons() {
+        const rows = container.querySelectorAll(".weekly-row");
+
+        rows.forEach(row => {
+            row.querySelector(".remove-slot").disabled =
+                rows.length === 1;
+        });
+
+        addButton.disabled = rows.length >= 21;
+    }
+
+    function addSlot() {
+        container.appendChild(template.content.cloneNode(true));
+        updateButtons();
+    }
+
+    addButton.addEventListener("click", addSlot);
+
+    container.addEventListener("click", event => {
+        const button = event.target.closest(".remove-slot");
+
+        if (!button || button.disabled) return;
+
+        button.closest(".weekly-row").remove();
+        updateButtons();
+    });
+
+    addSlot();
+})();
+</script>
+
+{% endblock %}

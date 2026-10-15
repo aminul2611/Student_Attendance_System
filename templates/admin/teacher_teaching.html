@@ -5,170 +5,91 @@
 
 {% block content %}
 
-<div class="teacher-management">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/student-management.css') }}">
 
-    <h1>Classes and Schedule</h1>
+<style>
+.teacher-weekly {
+    white-space: pre-line;
+    line-height: 1.8;
+}
+</style>
 
-    <p>{{ teacher.name }} — {{ teacher.email }}</p>
+<div class="sd-page">
 
-    <a class="button secondary"
-       href="{{ url_for('admin_portal.teacher_details') }}">
-        Back to Teachers
-    </a>
+    <div class="sd-list-heading">
+        <div class="sd-heading">
+            <h1>Teacher Classes</h1>
 
-    <div class="teacher-account-grid">
+            <p class="sd-muted">
+                {{ teacher.name }} — {{ teacher.email }}
+            </p>
+        </div>
 
-        <form class="panel" method="post">
-            <h2>Assign a Class</h2>
-
-            <input type="hidden"
-                   name="csrf_token"
-                   value="{{ csrf_token() }}">
-
-            <input type="hidden"
-                   name="action"
-                   value="assign_class">
-
-            <label>
-                Unique Class Code
-                <input name="code"
-                       placeholder="Example: MATH-08-A"
-                       maxlength="80"
-                       required>
-            </label>
-
-            <label>
-                Class, Section and Subject
-                <input name="name"
-                       placeholder="Class 8 / A / Mathematics"
-                       maxlength="150"
-                       required>
-            </label>
-
-            <button type="submit">Assign Class</button>
-        </form>
-
-        <form class="panel" method="post">
-            <h2>Schedule a Class</h2>
-
-            <input type="hidden"
-                   name="csrf_token"
-                   value="{{ csrf_token() }}">
-
-            <input type="hidden"
-                   name="action"
-                   value="schedule">
-
-            <label>
-                Assigned Class
-                <select name="class_id" required>
-                    <option value="">Choose a class</option>
-
-                    {% for c in classes %}
-                    <option value="{{ c.id }}">
-                        {{ c.code }} — {{ c.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </label>
-
-            <label>
-                Date
-                <input type="date"
-                       name="lesson_date"
-                       required>
-            </label>
-
-            <label>
-                Start Time
-                <input type="time"
-                       name="start_time"
-                       required>
-            </label>
-
-            <label>
-                End Time
-                <input type="time"
-                       name="end_time"
-                       required>
-            </label>
-
-            <label>
-                Room
-                <input name="room" maxlength="100">
-            </label>
-
-            <label>
-                Topic
-                <input name="topic" maxlength="300">
-            </label>
-
-            <button type="submit"
-                    {% if not classes %}disabled{% endif %}>
-                Save Schedule
-            </button>
-
-        </form>
-
+        <a class="sd-btn secondary"
+           href="{{ url_for('admin_portal.teacher_details') }}">
+            Back to teachers
+        </a>
     </div>
 
-    <section class="panel">
+    <section class="sd-card">
         <h2>Assigned Classes</h2>
 
-        <div class="table-wrap">
+        <div class="sd-table-wrap">
             <table>
                 <thead>
                     <tr>
                         <th>Code</th>
-                        <th>Class / Section / Subject</th>
+                        <th>Subject</th>
+                        <th>Semester</th>
+                        <th>Weekly time</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     {% for c in classes %}
                     <tr>
-                        <td>{{ c.code }}</td>
+                        <td>
+                            <strong>{{ c.code }}</strong>
+                        </td>
+
                         <td>{{ c.name }}</td>
+
+                        <td>{{ c.semester or '—' }}</td>
+
+                        <td class="teacher-weekly">{{ (c.class_time or 'Time not set')|replace(' | ', '\n') }}</td>
+
+                        <td>
+                            <form method="post"
+                                  class="sd-remove-form"
+                                  action="{{ url_for('admin_portal.teacher_teaching', teacher_id=teacher.id) }}">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <input type="hidden"
+                                       name="action"
+                                       value="remove_teacher_class">
+
+                                <input type="hidden"
+                                       name="class_id"
+                                       value="{{ c.id }}">
+
+                                <button class="sd-btn danger"
+                                        type="submit">
+                                    Remove
+                                </button>
+                            </form>
+                        </td>
                     </tr>
+
                     {% else %}
                     <tr>
-                        <td colspan="2">No classes assigned.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section class="panel">
-        <h2>Scheduled Classes</h2>
-
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Class</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Room</th>
-                        <th>Topic</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for lesson in lessons %}
-                    <tr>
-                        <td>{{ lesson.lesson_date }}</td>
-                        <td>{{ lesson.name }}</td>
-                        <td>{{ lesson.start_time }}</td>
-                        <td>{{ lesson.end_time }}</td>
-                        <td>{{ lesson.room or '—' }}</td>
-                        <td>{{ lesson.topic or '—' }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6">No classes scheduled.</td>
+                        <td colspan="5">
+                            No classes assigned.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

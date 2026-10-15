@@ -3,32 +3,59 @@
 <tr data-teacher-row
     data-search="{{ teacher.name }} {{ teacher.email }} {{ teacher.department }}">
 
+    <!-- Name -->
     <td>{{ teacher.name }}</td>
 
+    <!-- Email -->
     <td>{{ teacher.email }}</td>
 
+    <!-- Department -->
     <td>{{ teacher.department or '—' }}</td>
 
-    <td>
-        <span class="teacher-status {{ 'is-active' if teacher.active else 'is-disabled' }}">
-            {{ 'Active' if teacher.active else 'Disabled' }}
-        </span>
-    </td>
-
+    <!-- Details -->
     <td>
         <a class="button secondary"
-           href="{{ url_for('admin_portal.teacher_teaching',
-                            teacher_id=teacher.id) }}">
+           href="{{ url_for('admin_portal.teacher_teaching', teacher_id=teacher.id) }}">
             Details
         </a>
     </td>
 
+    <!-- Account -->
     <td>
         <a class="button secondary"
-           href="{{ url_for('admin_portal.teacher_account',
-                            teacher_id=teacher.id) }}">
+           href="{{ url_for('admin_portal.teacher_account', teacher_id=teacher.id) }}">
             Settings
         </a>
+    </td>
+
+    <!-- Clickable Status -->
+    <td>
+        <form method="post"
+              action="{{ url_for('admin_portal.set_teacher_status', teacher_id=teacher.id) }}"
+              class="teacher-toggle-form"
+              data-teacher-form
+              data-message="teacher-status-message">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden"
+                   name="active"
+                   value="{{ '0' if teacher.active else '1' }}">
+
+            <button type="submit"
+                    class="teacher-toggle {{ 'is-active' if teacher.active else 'is-inactive' }}"
+                    aria-label="{{ 'Disable' if teacher.active else 'Enable' }} {{ teacher.name }}"
+                    title="{{ 'Click to disable' if teacher.active else 'Click to enable' }}">
+
+                <span class="toggle-dot"
+                      aria-hidden="true"></span>
+
+                {{ 'Active' if teacher.active else 'Inactive' }}
+            </button>
+
+        </form>
     </td>
 
 </tr>
@@ -37,7 +64,5 @@
 
 <tr id="teacher-no-match"
     {% if teachers %}hidden{% endif %}>
-
     <td colspan="6">No teachers found.</td>
-
 </tr>

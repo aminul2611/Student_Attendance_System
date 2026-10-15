@@ -11,7 +11,8 @@ from ..common import database, require
 
 def teacher_rows():
     with database() as db:
-        return db.execute("""
+        return db.execute(
+            """
             SELECT
                 u.id,
                 u.name,
@@ -23,7 +24,8 @@ def teacher_rows():
                 ON p.user_id = u.id
             WHERE u.role = 'teacher'
             ORDER BY u.name COLLATE NOCASE, u.id
-        """).fetchall()
+            """
+        ).fetchall()
 
 
 def identity():
@@ -58,6 +60,7 @@ def password_error():
         return "Passwords do not match."
 
     return None
+
 
 @bp.get("/teacher-details")
 @require("admin")
@@ -126,7 +129,9 @@ def create_teacher_account():
             message=str(error),
         ), 400
 
-    department = request.form.get("department", "").strip()
+    department = request.form.get(
+        "department", ""
+    ).strip()
 
     if len(department) > 150:
         return jsonify(
@@ -137,7 +142,10 @@ def create_teacher_account():
     error = password_error()
 
     if error:
-        return jsonify(ok=False, message=error), 400
+        return jsonify(
+            ok=False,
+            message=error,
+        ), 400
 
     hashed = generate_password_hash(
         request.form["new_password"]
@@ -146,7 +154,11 @@ def create_teacher_account():
     try:
         with database() as db:
             existing = db.execute(
-                "SELECT 1 FROM users WHERE lower(email) = ?",
+                """
+                SELECT 1
+                FROM users
+                WHERE lower(email) = ?
+                """,
                 (email,),
             ).fetchone()
 
@@ -156,8 +168,9 @@ def create_teacher_account():
                     message="This email is already in use.",
                 ), 409
 
-            teacher_id = db.execute("""
-                INSERT INTO users(
+            teacher_id = db.execute(
+                """
+                INSERT INTO users (
                     name,
                     email,
                     password_hash,
@@ -165,15 +178,20 @@ def create_teacher_account():
                     active
                 )
                 VALUES (?, ?, ?, 'teacher', 1)
-            """, (name, email, hashed)).lastrowid
+                """,
+                (name, email, hashed),
+            ).lastrowid
 
-            db.execute("""
-                INSERT INTO teacher_profiles(
+            db.execute(
+                """
+                INSERT INTO teacher_profiles (
                     user_id,
                     department
                 )
                 VALUES (?, ?)
-            """, (teacher_id, department))
+                """,
+                (teacher_id, department),
+            )
 
     except sqlite3.IntegrityError:
         return jsonify(
@@ -194,6 +212,45 @@ def create_teacher_account():
     )
 
 
+@bp.post("/teacher-details/<int:teacher_id>/status")
+@require("admin")
+def set_teacher_status(teacher_id):
+    active = request.form.get("active", "").strip()
+
+    if active not in ("0", "1"):
+        return jsonify(
+            ok=False,
+            message="Choose a valid account status.",
+        ), 400
+
+    with database() as db:
+        result = db.execute(
+            """
+            UPDATE users
+            SET active = ?
+            WHERE id = ?
+              AND role = 'teacher'
+            """,
+            (int(active), teacher_id),
+        )
+
+        if result.rowcount == 0:
+            abort(404)
+
+    return jsonify(
+        ok=True,
+        message=(
+            "Teacher enabled successfully."
+            if active == "1"
+            else "Teacher disabled successfully."
+        ),
+        html=render_template(
+            "admin/teacher_rows.html",
+            teachers=teacher_rows(),
+        ),
+    )
+
+
 @bp.route(
     "/teacher-details/<int:teacher_id>/account",
     methods=["GET", "POST"],
@@ -201,7 +258,8 @@ def create_teacher_account():
 @require("admin")
 def teacher_account(teacher_id):
     with database() as db:
-        teacher = db.execute("""
+        teacher = db.execute(
+            """
             SELECT
                 u.id,
                 u.name,
@@ -215,7 +273,9 @@ def teacher_account(teacher_id):
                 ON p.user_id = u.id
             WHERE u.id = ?
               AND u.role = 'teacher'
-        """, (teacher_id,)).fetchone()
+            """,
+            (teacher_id,),
+        ).fetchone()
 
     if teacher is None:
         abort(404)
@@ -252,7 +312,7 @@ def teacher_account(teacher_id):
             ),
         ), 400
 
-    active = request.form.get("active", "")
+    active = request.form.get("active", "").strip()
 
     if active not in ("0", "1"):
         return jsonify(
@@ -262,12 +322,15 @@ def teacher_account(teacher_id):
 
     try:
         with database() as db:
-            existing = db.execute("""
+            existing = db.execute(
+                """
                 SELECT 1
                 FROM users
                 WHERE lower(email) = ?
                   AND id <> ?
-            """, (email, teacher_id)).fetchone()
+                """,
+                (email, teacher_id),
+            ).fetchone()
 
             if existing:
                 return jsonify(
@@ -275,22 +338,26 @@ def teacher_account(teacher_id):
                     message="This email is already in use.",
                 ), 409
 
-            db.execute("""
+            db.execute(
+                """
                 UPDATE users
                 SET name = ?,
                     email = ?,
                     active = ?
                 WHERE id = ?
                   AND role = 'teacher'
-            """, (
-                name,
-                email,
-                int(active),
-                teacher_id,
-            ))
+                """,
+                (
+                    name,
+                    email,
+                    int(active),
+                    teacher_id,
+                ),
+            )
 
-            db.execute("""
-                INSERT INTO teacher_profiles(
+            db.execute(
+                """
+                INSERT INTO teacher_profiles (
                     user_id,
                     phone,
                     department,
@@ -301,7 +368,9 @@ def teacher_account(teacher_id):
                     phone = excluded.phone,
                     department = excluded.department,
                     designation = excluded.designation
-            """, (teacher_id, *fields))
+                """,
+                (teacher_id, *fields),
+            )
 
     except sqlite3.IntegrityError:
         return jsonify(
@@ -320,27 +389,31 @@ def teacher_account(teacher_id):
     )
 
 
-@bp.post(
-    "/teacher-details/<int:teacher_id>/reset-password"
-)
+@bp.post("/teacher-details/<int:teacher_id>/reset-password")
 @require("admin")
 def reset_teacher_password(teacher_id):
     error = password_error()
 
     if error:
-        return jsonify(ok=False, message=error), 400
+        return jsonify(
+            ok=False,
+            message=error,
+        ), 400
 
     hashed = generate_password_hash(
         request.form["new_password"]
     )
 
     with database() as db:
-        result = db.execute("""
+        result = db.execute(
+            """
             UPDATE users
             SET password_hash = ?
             WHERE id = ?
               AND role = 'teacher'
-        """, (hashed, teacher_id))
+            """,
+            (hashed, teacher_id),
+        )
 
         if result.rowcount == 0:
             abort(404)

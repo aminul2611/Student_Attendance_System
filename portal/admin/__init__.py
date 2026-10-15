@@ -15,3 +15,4 @@ from . import (
 )
 from . import teacher_accounts
 from . import teaching
+from . import student_accounts
