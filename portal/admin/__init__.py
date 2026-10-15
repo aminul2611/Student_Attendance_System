@@ -13,3 +13,5 @@ from . import (
     notices,
     profile,
 )
+from . import teacher_accounts
+from . import teaching

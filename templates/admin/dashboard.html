@@ -28,105 +28,15 @@
 
 </section>
 
-<form id="report-filters"
-      class="panel filters"
-      method="get">
 
-    <label>
-        View
+<!-- 1. Student and Teacher attendance graphs -->
+{% include 'admin/graphs.html' %}
 
-        <select name="mode" id="report-mode">
 
-            <option value="daily"
-                    {% if mode=='daily' %}selected{% endif %}>
-                Daily
-            </option>
-
-            <option value="monthly"
-                    {% if mode=='monthly' %}selected{% endif %}>
-                Monthly
-            </option>
-
-        </select>
-    </label>
-
-    <label id="date-field"
-           {% if mode!='daily' %}hidden{% endif %}>
-
-        Date
-
-        <input type="date"
-               name="date"
-               value="{{ selected_date }}"
-               max="{{ max_date }}"
-               required>
-
-    </label>
-
-    <label id="month-field"
-           {% if mode!='monthly' %}hidden{% endif %}>
-
-        Month
-
-        <input type="month"
-               name="month"
-               value="{{ selected_month }}"
-               max="{{ max_month }}"
-               required>
-
-    </label>
-
-    <label>
-        Teacher
-
-        <select name="teacher_id" id="teacher-filter">
-
-            <option value="">All teachers</option>
-
-            {% for teacher in teachers %}
-
-            <option value="{{ teacher.id }}"
-                    {% if teacher_id==teacher.id|string %}selected{% endif %}>
-                {{ teacher.name }}
-            </option>
-
-            {% endfor %}
-
-        </select>
-    </label>
-
-    <label>
-        Class
-
-        <select name="class_id" id="class-filter">
-
-            <option value="">All assigned classes</option>
-
-            {% for classroom in classes %}
-
-            <option value="{{ classroom.id }}"
-                    {% if class_id==classroom.id|string %}selected{% endif %}>
-
-                {{ classroom.code }} · {{ classroom.name }}
-
-            </option>
-
-            {% endfor %}
-
-        </select>
-    </label>
-
-    <button type="submit">Apply filters</button>
-
-</form>
-
-<p class="period">
-    Report period: {{ period }} · {{ campus_timezone }}
-</p>
-
+<!-- 2. All six summary cards -->
 <section class="summary-grid" aria-label="Summary">
 
-    {% for label, value, caption in cards %}
+    {% for label,value,caption in cards %}
 
     <article class="summary-card">
 
@@ -148,7 +58,100 @@
 
 </section>
 
-{% include 'admin/graphs.html' %}
+
+<!-- 3. Report filters -->
+<form id="report-filters"
+      class="panel filters"
+      method="get">
+
+    <label>
+        View
+
+        <select name="mode" id="report-mode">
+
+            <option value="daily"
+                    {% if mode == 'daily' %}selected{% endif %}>
+                Daily
+            </option>
+
+            <option value="monthly"
+                    {% if mode == 'monthly' %}selected{% endif %}>
+                Monthly
+            </option>
+
+        </select>
+    </label>
+
+    <label id="date-field"
+           {% if mode != 'daily' %}hidden{% endif %}>
+
+        Date
+
+        <input type="date"
+               name="date"
+               value="{{ selected_date }}"
+               max="{{ max_date }}"
+               required>
+    </label>
+
+    <label id="month-field"
+           {% if mode != 'monthly' %}hidden{% endif %}>
+
+        Month
+
+        <input type="month"
+               name="month"
+               value="{{ selected_month }}"
+               max="{{ max_month }}"
+               required>
+    </label>
+
+    <label>
+        Teacher
+
+        <select name="teacher_id" id="teacher-filter">
+
+            <option value="">All teachers</option>
+
+            {% for t in teachers %}
+
+            <option value="{{ t.id }}"
+                    {% if teacher_id == t.id|string %}selected{% endif %}>
+                {{ t.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+    </label>
+
+    <label>
+        Class
+
+        <select name="class_id" id="class-filter">
+
+            <option value="">All assigned classes</option>
+
+            {% for c in classes %}
+
+            <option value="{{ c.id }}"
+                    {% if class_id == c.id|string %}selected{% endif %}>
+                {{ c.code }} · {{ c.name }}
+            </option>
+
+            {% endfor %}
+
+        </select>
+    </label>
+
+    <button type="submit">Apply filters</button>
+
+</form>
+
+<p class="period">
+    Report period: {{ period }} · {{ campus_timezone }}
+</p>
+
 
 <section class="panel">
 
@@ -161,6 +164,7 @@
     <div class="table-wrap">
 
         <table>
+
             <thead>
                 <tr>
                     <th>Date</th>
@@ -173,22 +177,18 @@
 
             <tbody>
 
-                {% for lesson in sessions %}
+                {% for s in sessions %}
 
                 <tr>
-                    <td>{{ lesson.lesson_date }}</td>
+                    <td>{{ s.lesson_date }}</td>
 
-                    <td>
-                        {{ lesson.start_time }}–{{ lesson.end_time }}
-                    </td>
+                    <td>{{ s.start_time }}–{{ s.end_time }}</td>
 
-                    <td>
-                        {{ lesson.code }} · {{ lesson.name }}
-                    </td>
+                    <td>{{ s.code }} · {{ s.name }}</td>
 
-                    <td>{{ lesson.teacher_name }}</td>
+                    <td>{{ s.teacher_name }}</td>
 
-                    <td>{{ lesson.room or '—' }}</td>
+                    <td>{{ s.room or '—' }}</td>
                 </tr>
 
                 {% else %}
@@ -202,13 +202,15 @@
                 {% endfor %}
 
             </tbody>
+
         </table>
 
     </div>
 
 </section>
 
-<script id="attendance-graph-data"
-        type="application/json">{{ graphs|tojson }}</script>
+<script id="attendance-graph-data" type="application/json">
+    {{ graphs|tojson }}
+</script>
 
 {% endblock %}

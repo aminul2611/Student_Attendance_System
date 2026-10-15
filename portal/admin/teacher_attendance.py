@@ -37,7 +37,7 @@ def teacher_attendance():
         ).fetchall()
 
     return render_template(
-        "admin/teacher_attendance.html",
+        "admin/teacher_details.html",
         rows=rows,
         selected=selected,
     )

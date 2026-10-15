@@ -1,0 +1,43 @@
+{% for teacher in teachers %}
+
+<tr data-teacher-row
+    data-search="{{ teacher.name }} {{ teacher.email }} {{ teacher.department }}">
+
+    <td>{{ teacher.name }}</td>
+
+    <td>{{ teacher.email }}</td>
+
+    <td>{{ teacher.department or '—' }}</td>
+
+    <td>
+        <span class="teacher-status {{ 'is-active' if teacher.active else 'is-disabled' }}">
+            {{ 'Active' if teacher.active else 'Disabled' }}
+        </span>
+    </td>
+
+    <td>
+        <a class="button secondary"
+           href="{{ url_for('admin_portal.teacher_teaching',
+                            teacher_id=teacher.id) }}">
+            Details
+        </a>
+    </td>
+
+    <td>
+        <a class="button secondary"
+           href="{{ url_for('admin_portal.teacher_account',
+                            teacher_id=teacher.id) }}">
+            Settings
+        </a>
+    </td>
+
+</tr>
+
+{% endfor %}
+
+<tr id="teacher-no-match"
+    {% if teachers %}hidden{% endif %}>
+
+    <td colspan="6">No teachers found.</td>
+
+</tr>

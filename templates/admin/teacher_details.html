@@ -1,0 +1,198 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Teacher Details{% endblock %}
+{% block page_name %}Teacher Details{% endblock %}
+
+{% block content %}
+
+<div class="teacher-management">
+
+    <div class="page-heading">
+        <div>
+            <h1>Teacher Details</h1>
+            <p class="muted">
+                Manage teacher accounts, classes and routines.
+            </p>
+        </div>
+
+        <a class="button secondary"
+           href="{{ url_for('admin_portal.teacher_attendance') }}">
+            Attendance Records
+        </a>
+    </div>
+
+    <details class="panel teacher-create">
+        <summary>Add teacher</summary>
+
+        <p id="teacher-create-message"
+           class="notice"
+           role="status"
+           aria-live="polite"
+           hidden></p>
+
+        <form method="post"
+              action="{{ url_for('admin_portal.create_teacher_account') }}"
+              data-teacher-form
+              data-message="teacher-create-message"
+              data-clear-on-success>
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="teacher-field-grid">
+
+                <label>
+                    Full name
+                    <input name="name"
+                           maxlength="100"
+                           required>
+                </label>
+
+                <label>
+                    Email
+                    <input type="email"
+                           name="email"
+                           maxlength="254"
+                           required>
+                </label>
+
+                <label>
+                    Department
+                    <input name="department"
+                           maxlength="150"
+                           placeholder="Example: CSE">
+                </label>
+
+                <label>
+                    Initial password
+                    <input type="password"
+                           name="new_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           required>
+                </label>
+
+                <label>
+                    Confirm password
+                    <input type="password"
+                           name="confirm_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           required>
+                </label>
+
+            </div>
+
+            <button type="submit">Create teacher</button>
+
+        </form>
+    </details>
+
+    <section class="panel">
+
+        <div class="teacher-list-heading">
+            <h2>All teachers</h2>
+
+            <label class="teacher-search">
+                Search
+                <input id="teacher-search"
+                       type="search"
+                       placeholder="Name, email or department">
+            </label>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                        <th>Account</th>
+                    </tr>
+                </thead>
+
+                <tbody id="teacher-list">
+                    {% include 'admin/teacher_rows.html' %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</div>
+<section class="panel monthly-attendance-chart">
+
+    <div class="monthly-chart-heading">
+        <div>
+            <h2>Monthly Teacher Attendance</h2>
+            <p class="muted">
+                Check-in days — {{ month_label }}
+            </p>
+        </div>
+
+        <form method="get"
+              action="{{ url_for('admin_portal.teacher_details') }}"
+              class="monthly-chart-filter">
+
+            <label for="attendance-month">Select month</label>
+
+            <div class="monthly-filter-controls">
+                <input id="attendance-month"
+                       type="month"
+                       name="month"
+                       value="{{ selected_month }}"
+                       required>
+
+                <button type="submit">Show</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="monthly-chart-bars"
+         role="list"
+         aria-label="Teacher check-in days for {{ month_label }}">
+
+        {% for row in attendance_chart %}
+        <div class="monthly-chart-row"
+             role="listitem"
+             aria-label="{{ row.name }}: {{ row.checkin_days }} check-in days">
+
+            <span class="monthly-teacher-name">
+                {{ row.name }}
+            </span>
+
+            <div class="monthly-bar-track" aria-hidden="true">
+                <div class="monthly-bar-fill"
+                     style="width: {{ (row.checkin_days / chart_max * 100)|round(2) }}%;">
+                </div>
+            </div>
+
+            <strong class="monthly-day-count">
+                {{ row.checkin_days }}
+                {{ 'day' if row.checkin_days == 1 else 'days' }}
+            </strong>
+
+        </div>
+        {% else %}
+        <p class="muted">No teacher accounts found.</p>
+        {% endfor %}
+
+    </div>
+
+    <p class="monthly-chart-note">
+        Each date with a check-in counts as one day.
+        Leave, holidays and absence are not calculated here.
+    </p>
+
+</section>
+
+<script src="{{ url_for('static', filename='admin/teacher-accounts.js') }}"
+        defer></script>
+
+{% endblock %}
