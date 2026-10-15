@@ -4,171 +4,194 @@
 
 {% block content %}
 
-<h1>Notices</h1>
+<div class="notices-page">
 
-<p class="muted">
-    Only selected teachers and students can see a published notice.
-</p>
+    <h1>Notices</h1>
+    <p class="muted">Create a notice and choose who can see it.</p>
 
-<p id="notice-message"
-   class="notice"
-   role="status"
-   aria-live="polite"
-   hidden></p>
+    <p id="notice-message"
+       class="notice"
+       role="status"
+       aria-live="polite"
+       hidden></p>
 
-<form id="notice-form"
-      class="panel form-card notice-form"
-      method="post"
-      action="{{ url_for('admin_portal.save_notice') }}"
-      data-ajax-form
-      data-message="notice-message"
-      data-reset="notice"
-      data-page-url="{{ url_for('admin_portal.notices') }}">
+    <form id="notice-form"
+          class="panel form-card notice-form"
+          method="post"
+          action="{{ url_for('admin_portal.save_notice') }}"
+          data-ajax-form
+          data-message="notice-message"
+          data-reset="notice"
+          data-page-url="{{ url_for('admin_portal.notices') }}">
 
-    <h2 id="notice-form-heading">
-        {{ 'Edit notice' if editing else 'Create notice' }}
-    </h2>
+        <h2 id="notice-form-heading">
+            {{ 'Edit notice' if editing else 'Create notice' }}
+        </h2>
 
-    <input type="hidden"
-           name="csrf_token"
-           value="{{ csrf_token() }}">
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
 
-    <input type="hidden"
-           name="notice_id"
-           value="{{ editing.id if editing else '' }}">
+        <input type="hidden"
+               name="notice_id"
+               value="{{ editing.id if editing else '' }}">
 
-    <label>
-        Title
+        <div class="notice-top-grid">
 
-        <input name="title"
-               value="{{ editing.title if editing else '' }}"
-               maxlength="140"
-               required>
-    </label>
+            <label>
+                Title
 
-    <label>
-        Message
-
-        <textarea name="body"
-                  rows="5"
-                  maxlength="5000"
-                  required>{{ editing.body if editing else '' }}</textarea>
-    </label>
-
-    <label>
-        Status
-
-        <select name="active">
-
-            <option value="1"
-                    {% if not editing or editing.active %}selected{% endif %}>
-                Published
-            </option>
-
-            <option value="0"
-                    {% if editing and not editing.active %}selected{% endif %}>
-                Draft
-            </option>
-
-        </select>
-    </label>
-
-    <h3>Select recipients</h3>
-
-    <label>
-        Find a teacher or student
-
-        <input id="recipient-search"
-               type="search"
-               placeholder="Name, email or Student ID">
-    </label>
-
-    <p class="muted">
-        <span id="recipient-count">
-            {{ selected_ids|length }}
-        </span>
-        selected
-    </p>
-
-    <div class="admin-forms">
-
-        {% for role, label in [
-            ('teacher', 'Teachers'),
-            ('student', 'Students')
-        ] %}
-
-        <fieldset class="recipient-group">
-
-            <legend>{{ label }}</legend>
-
-            {% for person in people if person.role==role %}
-
-            <label class="recipient-option"
-                   data-search="{{ person.name }} {{ person.email }} {{ person.student_no or '' }}">
-
-                <input type="checkbox"
-                       name="recipients"
-                       value="{{ person.id }}"
-                       {% if person.id in selected_ids %}checked{% endif %}>
-
-                <span>
-                    {{ person.name }}
-
-                    <small>
-                        {{ person.email }}
-
-                        {% if person.student_no %}
-                            · {{ person.student_no }}
-                        {% endif %}
-
-                        {% if not person.active %}
-                            · Disabled account
-                        {% endif %}
-                    </small>
-                </span>
-
+                <input name="title"
+                       value="{{ editing.title if editing else '' }}"
+                       placeholder="Enter notice title"
+                       maxlength="140"
+                       required>
             </label>
 
-            {% else %}
+            <label>
+                Status
 
-            <p class="muted">
-                No {{ label|lower }} found.
-            </p>
+                <select name="active">
+                    <option value="1"
+                            {% if not editing or editing.active %}selected{% endif %}>
+                        Published
+                    </option>
+
+                    <option value="0"
+                            {% if editing and not editing.active %}selected{% endif %}>
+                        Draft
+                    </option>
+                </select>
+            </label>
+
+        </div>
+
+        <label>
+            Message
+
+            <textarea name="body"
+                      rows="6"
+                      maxlength="5000"
+                      placeholder="Write your notice here..."
+                      required>{{ editing.body if editing else '' }}</textarea>
+        </label>
+
+        <h2>Select recipients</h2>
+
+        <label>
+            Search teachers or students
+
+            <input id="recipient-search"
+                   type="search"
+                   placeholder="Search by name, email or Student ID">
+        </label>
+
+        <p class="muted">
+            <span id="recipient-count">{{ selected_ids|length }}</span>
+            selected
+        </p>
+
+        <div class="notice-recipient-grid">
+
+            {% for role,label in [
+                ('teacher','Teachers'),
+                ('student','Students')
+            ] %}
+
+            <div class="recipient-group">
+
+                <div class="recipient-group-heading">
+
+                    <h3>{{ label }}</h3>
+
+                    <div class="recipient-tools">
+
+                        <button type="button"
+                                data-recipient-action="all">
+                            All {{ label }}
+                        </button>
+
+                        <button type="button"
+                                data-recipient-action="clear">
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="recipient-list">
+
+                    {% for person in people if person.role == role %}
+
+                    <label class="recipient-option"
+                           data-search="{{ person.name }} {{ person.email }} {{ person.student_no or '' }}">
+
+                        <input type="checkbox"
+                               name="recipients"
+                               value="{{ person.id }}"
+                               {% if person.id in selected_ids %}checked{% endif %}>
+
+                        <span>
+                            <strong>{{ person.name }}</strong>
+
+                            <small>{{ person.email }}</small>
+
+                            {% if person.student_no %}
+                            <small>ID: {{ person.student_no }}</small>
+                            {% endif %}
+
+                            {% if not person.active %}
+                            <small>Disabled account</small>
+                            {% endif %}
+                        </span>
+
+                    </label>
+
+                    {% else %}
+
+                    <p class="muted">
+                        No {{ label|lower }} found.
+                    </p>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
 
             {% endfor %}
 
-        </fieldset>
+        </div>
 
-        {% endfor %}
+        <div class="form-actions">
 
-    </div>
+            <button type="submit">Save notice</button>
 
-    <div class="form-actions">
+            <a id="cancel-notice-edit"
+               class="button secondary"
+               href="{{ url_for('admin_portal.notices') }}"
+               {% if not editing %}hidden{% endif %}>
+                Cancel edit
+            </a>
 
-        <button type="submit">Save notice</button>
+        </div>
 
-        <a id="cancel-notice-edit"
-           class="button secondary"
-           href="{{ url_for('admin_portal.notices') }}"
-           {% if not editing %}hidden{% endif %}>
-            Cancel edit
-        </a>
+    </form>
 
-    </div>
+    <section class="panel">
 
-</form>
+        <h2>All notices</h2>
 
-<section class="panel">
+        <div id="notice-list">
+            {% include 'admin/notice_list.html' %}
+        </div>
 
-    <h2>All notices</h2>
+    </section>
 
-    <div id="notice-list">
-        {% include 'admin/notice_list.html' %}
-    </div>
+</div>
 
-</section>
-
-<script src="{{ url_for('static', filename='admin/forms.js') }}"
-        defer></script>
+<script src="{{ url_for('static', filename='admin/forms.js') }}" defer></script>
+<script src="{{ url_for('static', filename='admin/notice-selection.js') }}" defer></script>
 
 {% endblock %}
