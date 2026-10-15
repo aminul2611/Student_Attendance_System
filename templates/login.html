@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ selected_role|title }} Login · Smart Campus
+{% endblock %}
+
+{% block content %}
+
+{% set descriptions = {
+    'admin': 'Keep your campus organized. Manage accounts, classes and activity from your workspace.',
+    'teacher': 'A focused space for your classes, coursework and student progress.',
+    'student': 'Your classes, assignments and progress, all together.'
+} %}
+
+<div class="portal-login">
+
+    <section class="login-intro role-{{ selected_role }}">
+
+        <a class="login-back" href="{{ url_for('index') }}">
+            ← Choose another role
+        </a>
+
+        <div>
+            <span class="login-role-badge">
+                {{ selected_role|title }} workspace
+            </span>
+
+            <h1>
+                Welcome<br>
+                back<span>.</span>
+            </h1>
+
+            <p>{{ descriptions[selected_role] }}</p>
+        </div>
+
+        <span class="login-intro-note">
+            Smart Campus · Your campus, connected.
+        </span>
+    </section>
+
+    <section class="login-form-panel">
+
+        <span class="eyebrow">
+            {{ selected_role|upper }} ACCESS
+        </span>
+
+        <h2>Sign in to your account</h2>
+
+        <p class="muted">
+            Use your {{ selected_role }} account to continue.
+        </p>
+
+        <form method="post" class="stack">
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <input
+                type="hidden"
+                name="next"
+                value="{{ request.args.get('next', '') }}"
+            >
+
+            <label>
+                Email address
+
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    autocomplete="username"
+                    required
+                >
+            </label>
+
+            <label>
+                Password
+
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+            </label>
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-full"
+            >
+                Sign in as {{ selected_role|title }} →
+            </button>
+        </form>
+
+        {% if selected_role == 'student' %}
+            <p class="auth-bottom">
+                New student?
+
+                <a href="{{ url_for('register') }}">
+                    Create an account
+                </a>
+            </p>
+        {% endif %}
+
+        <nav class="login-role-switch" aria-label="Choose login role">
+            {% for role in ['admin', 'teacher', 'student'] %}
+                <a
+                    class="{{ 'is-current' if role == selected_role else '' }}"
+                    href="{{ url_for(
+                        'login',
+                        role=role,
+                        next=request.args.get('next', '')
+                    ) }}"
+                    {% if role == selected_role %}
+                        aria-current="page"
+                    {% endif %}
+                >
+                    {{ role|title }}
+                </a>
+            {% endfor %}
+        </nav>
+
+    </section>
+</div>
+{% endblock %}

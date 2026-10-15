@@ -1,0 +1,64 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Teacher Attendance{% endblock %}
+{% block page_name %}Teacher Attendance{% endblock %}
+
+{% block content %}
+
+<h1>Teacher Attendance</h1>
+
+<p>Teacher check-in and check-out · {{ campus_timezone }}</p>
+
+<form method="get">
+
+    <label>
+        Date
+        <input type="date"
+               name="date"
+               value="{{ selected }}"
+               required>
+    </label>
+
+    <button class="btn btn-primary">Show attendance</button>
+
+</form>
+
+<div style="overflow-x:auto; margin-top:20px">
+
+    <table>
+        <thead>
+            <tr>
+                <th>Teacher</th>
+                <th>Email</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td>{{ r.email }}</td>
+                <td>{{ r.check_in|campus_time }}</td>
+                <td>{{ r.check_out|campus_time }}</td>
+
+                <td>
+                    {{ 'No check-in' if r.check_in is none
+                       else ('Checked out' if r.check_out is not none
+                       else 'Checked in') }}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="5">No teacher accounts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

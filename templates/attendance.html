@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance · Smart Campus{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">CLASS CHECK-IN</span>
+        <h1>Attendance</h1>
+
+        <p class="muted">
+            Scan the classroom QR code to confirm your attendance.
+        </p>
+    </div>
+
+    {% if g.user.role == 'admin' %}
+        <a class="btn btn-primary" href="#create-session">
+            ＋ New session
+        </a>
+    {% endif %}
+</div>
+
+{% if g.user.role == 'admin' %}
+<section class="panel form-panel" id="create-session">
+    <div class="panel-head">
+        <div>
+            <h2>Create attendance session</h2>
+            <p>
+                Sessions are for today. Each QR code expires after 5 minutes.
+            </p>
+        </div>
+
+        <span class="tiny-icon">▦</span>
+    </div>
+
+    <form
+        method="post"
+        action="{{ url_for('create_attendance') }}"
+        class="form-grid"
+    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+        <label>
+            Course / class name
+
+            <input
+                name="course"
+                placeholder="e.g. Cloud Computing"
+                required
+            >
+        </label>
+
+        <label>
+            Class date
+
+            <input
+                type="date"
+                name="session_date"
+                value="{{ today }}"
+                min="{{ today }}"
+                max="{{ today }}"
+                required
+            >
+        </label>
+
+        <div class="span-all form-actions">
+            <button type="submit" class="btn btn-primary">
+                Generate QR code →
+            </button>
+        </div>
+    </form>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Attendance sessions</h2>
+            <p>Your class sessions and attendance records.</p>
+        </div>
+
+        {% if g.user.role == 'admin' %}
+            <a href="{{ url_for('export_data', kind='attendance') }}">
+                Export CSV ↗
+            </a>
+        {% endif %}
+    </div>
+
+    {% if sessions %}
+        <div class="session-list">
+            {% for row in sessions %}
+                {% set is_open =
+                    row.active
+                    and row.expires_at > now_ts
+                    and row.session_date == today
+                %}
+
+                <div class="session-row">
+                    <div class="session-icon">▦</div>
+
+                    <div class="session-main">
+                        <b>{{ row.course }}</b>
+
+                        <small>
+                            {{ row.session_date }}
+
+                            {% if g.user.role == 'admin' %}
+                                · {{ row.marked }} student(s) checked in
+                            {% else %}
+                                · {{ row.my_status or 'Not marked' }}
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    {% if g.user.role == 'admin' %}
+                        <a
+                            class="btn btn-light btn-small"
+                            href="{{ url_for('attendance_qr', session_id=row.id) }}"
+                        >
+                            View QR
+                        </a>
+
+                        {% if is_open %}
+                            <span class="status-pill complete">Active</span>
+
+                            <form
+                                method="post"
+                                action="{{ url_for('close_attendance', session_id=row.id) }}"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger btn-small"
+                                >
+                                    Close
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="status-pill">
+                                Closed / Expired
+                            </span>
+                        {% endif %}
+
+                    {% elif row.my_status %}
+                        <span class="status-pill complete">
+                            {{ row.my_status }}
+                        </span>
+
+                    {% elif is_open %}
+                        <span class="status-pill">
+                            Scan classroom QR
+                        </span>
+
+                    {% else %}
+                        <span class="status-pill">Unavailable</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span>▦</span>
+            <b>No sessions yet</b>
+
+            <p>
+                Attendance sessions will appear here when created.
+            </p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

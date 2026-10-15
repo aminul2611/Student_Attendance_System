@@ -1,0 +1,69 @@
+{% for notice in notices %}
+
+<article class="notice-item">
+
+    <div class="panel-heading">
+
+        <h3>{{ notice.title }}</h3>
+
+        <span class="badge">
+            {{ 'Published' if notice.active else 'Draft' }}
+        </span>
+
+    </div>
+
+    <p class="muted">
+        {{ notice.author or 'Admin' }}
+        · {{ notice.created_at[:16]|replace('T',' ') }}
+        · {{ notice.recipients|length }} recipient(s)
+    </p>
+
+    <p class="muted">
+        For:
+
+        {% for person in notice.recipients %}
+
+            {{ person.name }} ({{ person.role|title }})
+            {% if not loop.last %}, {% endif %}
+
+        {% else %}
+
+            No remaining recipients
+
+        {% endfor %}
+    </p>
+
+    <p class="notice-body">{{ notice.body }}</p>
+
+    <div class="form-actions">
+
+        <a class="button secondary"
+           href="{{ url_for('admin_portal.notices', edit=notice.id) }}">
+            Edit
+        </a>
+
+        <form method="post"
+              action="{{ url_for('admin_portal.delete_notice', notice_id=notice.id) }}"
+              data-ajax-form
+              data-message="notice-message"
+              data-confirm-delete>
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <button class="danger-button" type="submit">
+                Delete
+            </button>
+
+        </form>
+
+    </div>
+
+</article>
+
+{% else %}
+
+<p class="muted">No notices yet.</p>
+
+{% endfor %}

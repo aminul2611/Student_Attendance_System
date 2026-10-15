@@ -1,0 +1,110 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="heading">
+
+    <div>
+        <h1>Welcome, {{ g.user.name }}!</h1>
+        <p>Your classes, students and teaching tools.</p>
+    </div>
+
+    <a class="button"
+       href="{{ url_for('teacher.my_attendance') }}">
+        My attendance
+    </a>
+
+</div>
+
+<h2>Teaching tools</h2>
+
+<div class="cards tool-cards">
+
+    {% for endpoint, label, symbol, color in [
+        ('teacher.students', 'Student Details', 'S', 'blue'),
+        ('teacher.attendance', 'Manual Attendance', 'A', 'green'),
+        ('teacher.classes', 'Daily Classes', 'C', 'orange')
+    ] %}
+
+    <a class="card"
+       data-search="{{ label }}"
+       href="{{ url_for(endpoint) }}">
+
+        <span class="card-icon {{ color }}">
+            {{ symbol }}
+        </span>
+
+        <h3>{{ label }}</h3>
+        <span class="link">Open section →</span>
+
+    </a>
+
+    {% endfor %}
+
+</div>
+
+<h2>My classes</h2>
+
+<div class="cards">
+
+    {% for c in classes %}
+
+    <a class="card"
+       data-search="{{ c.code }} {{ c.name }}"
+       href="{{ url_for('teacher.students', class_id=c.id) }}">
+
+        <span class="card-icon">▤</span>
+
+        <small>{{ c.code }}</small>
+        <h3>{{ c.name }}</h3>
+
+        <span class="link">Open class →</span>
+
+    </a>
+
+    {% else %}
+
+    <p class="empty">No classes assigned yet.</p>
+
+    {% endfor %}
+
+</div>
+
+<section class="panel">
+
+    <h2>Today's classes</h2>
+
+    {% for l in daily %}
+
+    <a class="list-row"
+       data-search="{{ l.name }} {{ l.topic }}"
+       href="{{ url_for('teacher.attendance', class_id=l.class_id, lesson_id=l.id) }}">
+
+        <span>
+            <b>{{ l.name }}</b>
+
+            <small>
+                {{ l.topic or 'Class session' }}
+                · {{ l.room or 'Room not set' }}
+            </small>
+        </span>
+
+        <strong>
+            {{ l.start_time }} – {{ l.end_time }}
+        </strong>
+
+    </a>
+
+    {% else %}
+
+    <p class="empty">
+        No classes scheduled for today.
+    </p>
+
+    {% endfor %}
+
+</section>
+
+{% endblock %}

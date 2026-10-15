@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}Smart Campus{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='dashboard.css') }}"
+    >
+</head>
+
+<body class="{{ 'workspace role-' ~ g.user.role if g.user else '' }}">
+
+{% if g.user %}
+<aside class="campus-sidebar">
+    <a class="campus-brand" href="{{ url_for('dashboard') }}">
+        <span class="campus-logo">SC</span>
+        <span>
+            Smart Campus
+            <small>{{ g.user.role|title }} workspace</small>
+        </span>
+    </a>
+
+    <div class="sidebar-caption">WORKSPACE</div>
+
+    <nav class="campus-nav" aria-label="Main navigation">
+        <a
+            href="{{ url_for('dashboard') }}"
+            class="{{ 'selected' if request.endpoint == 'dashboard' else '' }}"
+        >
+            <span aria-hidden="true">▦</span> Dashboard
+        </a>
+
+        <a
+            href="{{ url_for('tasks') }}"
+            class="{{ 'selected' if request.endpoint == 'tasks' else '' }}"
+        >
+            <span aria-hidden="true">✓</span>
+            {{ 'Homework' if g.user.role == 'teacher' else 'Tasks' }}
+        </a>
+
+        <a
+            href="{{ url_for('attendance') }}"
+            class="{{ 'selected' if request.endpoint == 'attendance' else '' }}"
+        >
+            <span aria-hidden="true">◷</span> Attendance
+        </a>
+
+        {% if g.user.role == 'admin' %}
+        <a
+            href="{{ url_for('students') }}"
+            class="{{ 'selected' if request.endpoint == 'students' else '' }}"
+        >
+            <span aria-hidden="true">♙</span> Students
+        </a>
+
+        <a
+            href="{{ url_for('reports') }}"
+            class="{{ 'selected' if request.endpoint == 'reports' else '' }}"
+        >
+            <span aria-hidden="true">↗</span> Reports
+        </a>
+        <a
+                href="{{ url_for('admin_portal.teacher_attendance') }}"
+                class="{{ 'selected' if request.endpoint=='admin_portal.teacher_attendance' else '' }}"
+        >
+
+             <span aria-hidden="true">◷</span>
+                 Teacher Attendance
+        </a>
+
+        {% endif %}
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="sidebar-person">
+            <span class="person-avatar">{{ g.user.name[:1]|upper }}</span>
+            <div>
+                <strong>{{ g.user.name }}</strong>
+                <small>{{ g.user.role|title }} account</small>
+            </div>
+        </div>
+
+        <form method="post" action="{{ url_for('logout') }}">
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+            <button class="sidebar-logout" type="submit">
+                Log out →
+            </button>
+        </form>
+    </div>
+</aside>
+
+<div class="campus-main">
+    <header class="campus-topbar">
+        <div>
+            <strong>{% block page_name %}Workspace{% endblock %}</strong>
+            <span class="topbar-date">{{ today }}</span>
+        </div>
+
+        <div class="topbar-account">
+            <span class="account-role">{{ g.user.role|title }}</span>
+            <span class="person-avatar">{{ g.user.name[:1]|upper }}</span>
+        </div>
+    </header>
+{% else %}
+<header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-icon">SC</span>
+        <span>
+            Smart Campus
+            <small>Student Task & Attendance</small>
+        </span>
+    </a>
+
+    <nav>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a
+            class="btn btn-primary btn-small"
+            href="{{ url_for('register') }}"
+        >
+            Register
+        </a>
+    </nav>
+</header>
+{% endif %}
+
+<main class="{{ 'campus-content' if g.user else 'container' }}">
+   {% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% for kind, message in messages %}
+
+        <p class="flash {{ kind }}" role="status">
+            {{ message }}
+        </p>
+
+    {% endfor %}
+
+{% endwith %}
+
+
+    {% block content %}{% endblock %}
+    {% include 'shared/notices.html' %}
+</main>
+
+<footer class="{{ 'campus-footer' if g.user else '' }}">
+    Smart Campus · Developed by {{ developer_name }}
+</footer>
+
+{% if g.user %}
+</div>
+{% endif %}
+
+</body>
+</html>

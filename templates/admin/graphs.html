@@ -1,0 +1,99 @@
+<div class="graph-grid">
+
+    <section class="panel">
+
+        <div class="panel-heading">
+            <h2>Student Attendance</h2>
+            <span class="badge">{{ mode|title }}</span>
+        </div>
+
+        <p class="muted">
+            Counts per student per scheduled session.
+            A student can appear in multiple sessions.
+        </p>
+
+        <div class="chart-scroll"
+             id="student-chart"></div>
+
+        <div id="student-legend"
+             class="legend"></div>
+
+        <p class="chart-note">
+            Not marked means no attendance was entered.
+            It is separate from Absent.
+        </p>
+
+    </section>
+
+    <section class="panel">
+
+        <div class="panel-heading">
+            <h2>Teacher Attendance</h2>
+            <span class="badge">{{ mode|title }}</span>
+        </div>
+
+        <p class="muted">
+            Daily check-in and check-out records.
+            Selecting a class selects its teacher.
+        </p>
+
+        <div class="chart-scroll"
+             id="teacher-chart"></div>
+
+        <div id="teacher-legend"
+             class="legend"></div>
+
+        <p class="chart-note">
+            Check-outs are included in check-ins.
+            Monthly counts represent teacher-days.
+        </p>
+
+    </section>
+
+</div>
+
+<details class="panel">
+
+    <summary>View exact daily numbers</summary>
+
+    <div class="table-wrap">
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Date</th>
+
+                    {% for status in graphs.statuses %}
+                    <th>{{ status }}</th>
+                    {% endfor %}
+
+                    <th>Teacher check-ins</th>
+                    <th>Teacher check-outs</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for day in graphs.days %}
+
+                <tr>
+                    <td>{{ day }}</td>
+
+                    {% for status in graphs.statuses %}
+                    <td>
+                        {{ graphs.student[day][status] }}
+                    </td>
+                    {% endfor %}
+
+                    <td>{{ graphs.teacher[day].ins }}</td>
+                    <td>{{ graphs.teacher[day].outs }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+</details>

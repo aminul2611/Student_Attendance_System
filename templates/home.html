@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome · Smart Campus{% endblock %}
+
+{% block content %}
+<section class="portal-welcome">
+    <span class="portal-tag">
+        <span></span>
+        YOUR CAMPUS, CONNECTED
+    </span>
+
+    <h1>
+        One campus.<br>
+        <span>Three ways to connect.</span>
+    </h1>
+
+    <p>
+        Choose your role to access your workspace, classes and progress.
+    </p>
+</section>
+
+<section class="portal-roles" aria-label="Choose your role">
+
+    <a
+        class="portal-role role-admin"
+        href="{{ url_for('login', role='admin') }}"
+    >
+        <div class="role-top">
+            <span class="role-icon" aria-hidden="true">⚙</span>
+            <span class="role-number">01</span>
+        </div>
+
+        <span class="role-label">CAMPUS MANAGEMENT</span>
+        <h2>Admin</h2>
+
+        <p>
+            Keep people, classes and campus activity organized.
+        </p>
+
+        <ul>
+            <li>Teacher & student accounts</li>
+            <li>Class assignments</li>
+            <li>Reports & monitoring</li>
+        </ul>
+
+        <span class="role-action">
+            Continue as Admin
+            <span aria-hidden="true">↗</span>
+        </span>
+    </a>
+
+    <a
+        class="portal-role role-teacher"
+        href="{{ url_for('login', role='teacher') }}"
+    >
+        <div class="role-top">
+            <span class="role-icon" aria-hidden="true">▤</span>
+            <span class="role-number">02</span>
+        </div>
+
+        <span class="role-label">TEACHING WORKSPACE</span>
+        <h2>Teacher</h2>
+
+        <p>
+            Bring your classes, coursework and student progress together.
+        </p>
+
+        <ul>
+            <li>QR & manual attendance</li>
+            <li>Homework & class notices</li>
+            <li>Marks & student reports</li>
+        </ul>
+
+        <span class="role-action">
+            Continue as Teacher
+            <span aria-hidden="true">↗</span>
+        </span>
+    </a>
+
+    <a
+        class="portal-role role-student"
+        href="{{ url_for('login', role='student') }}"
+    >
+        <div class="role-top">
+            <span class="role-icon" aria-hidden="true">✦</span>
+            <span class="role-number">03</span>
+        </div>
+
+        <span class="role-label">YOUR LEARNING SPACE</span>
+        <h2>Student</h2>
+
+        <p>
+            Stay on top of your classes, assignments and achievements.
+        </p>
+
+        <ul>
+            <li>Your enrolled classes</li>
+            <li>Homework & attendance</li>
+            <li>Notices & published marks</li>
+        </ul>
+
+        <span class="role-action">
+            Continue as Student
+            <span aria-hidden="true">↗</span>
+        </span>
+    </a>
+
+</section>
+
+<div class="portal-bottom">
+    <span>Everything for your class, in one place.</span>
+
+    <a href="{{ url_for('register') }}">
+        New student? Create an account →
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Students · Smart Campus{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">CLASS DIRECTORY</span>
+        <h1>Students</h1>
+
+        <p class="muted">
+            Manage student accounts and access.
+        </p>
+    </div>
+
+    <a
+        class="btn btn-light"
+        href="{{ url_for('export_data', kind='attendance') }}"
+    >
+        Export attendance CSV
+    </a>
+</div>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Registered students</h2>
+            <p>{{ students|length }} student account(s)</p>
+        </div>
+    </div>
+
+    {% if students %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Email</th>
+                        <th>Present marks</th>
+                        <th>Account</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <b>{{ student.name }}</b>
+
+                            <small class="table-sub">
+                                Joined {{ student.created_at[:10] }}
+                            </small>
+                        </td>
+
+                        <td>{{ student.student_no }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.present_count }}</td>
+
+                        <td>
+                            <span class="status-pill {{ 'complete' if student.active else '' }}">
+                                {{ 'Active' if student.active else 'Disabled' }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="inline-actions">
+                                <form
+                                    method="post"
+                                    action="{{ url_for('toggle_student', user_id=student.id) }}"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-light btn-small"
+                                    >
+                                        {{ 'Disable' if student.active else 'Enable' }}
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="post"
+                                    action="{{ url_for('delete_student', user_id=student.id) }}"
+                                    onsubmit="return confirm('Permanently delete this student and their records?')"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-small"
+                                    >
+                                        Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span>♙</span>
+            <b>No students registered</b>
+            <p>Students can create accounts using Register.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

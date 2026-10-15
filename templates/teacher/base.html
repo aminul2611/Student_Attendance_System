@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>
+        {% block title %}Teacher Workspace{% endblock %}
+        · Smart Campus
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='teacher/layout.css') }}">
+
+    <script src="{{ url_for('static', filename='teacher/layout.js') }}"
+            defer></script>
+</head>
+
+<body data-timezone="{{ campus_timezone }}">
+
+{% include 'teacher/sidebar.html' %}
+
+<div class="workspace">
+
+    {% include 'teacher/header.html' %}
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% for kind, message in messages %}
+
+        <p class="flash {{ kind }}" role="status">
+            {{ message }}
+        </p>
+
+        {% if kind == 'success'
+              and request.endpoint == 'teacher.profile' %}
+
+            <script>
+                alert({{ message | tojson }});
+            </script>
+
+        {% endif %}
+
+    {% endfor %}
+
+{% endwith %}
+
+        {% block content %}{% endblock %}
+        {% include 'shared/notices.html' %}
+    </main>
+
+    <footer>
+        Smart Campus · {{ developer_name }}
+    </footer>
+
+</div>
+
+</body>
+</html>

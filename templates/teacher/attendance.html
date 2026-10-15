@@ -1,0 +1,124 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Student Attendance{% endblock %}
+
+{% block content %}
+
+<h1>Student Attendance</h1>
+
+<p class="muted">
+    Manually mark attendance for students in your class.
+</p>
+
+{% include 'teacher/class_picker.html' %}
+
+{% if classroom %}
+
+<form method="get" class="picker">
+
+    <input type="hidden"
+           name="class_id"
+           value="{{ classroom.id }}">
+
+    <label>
+        Class session
+
+        <select name="lesson_id" onchange="this.form.submit()">
+            {% for l in lessons %}
+            <option value="{{ l.id }}"
+                    {% if lesson and l.id==lesson.id %}selected{% endif %}>
+                {{ l.lesson_date }} · {{ l.start_time }} ·
+                {{ l.topic or 'Class session' }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <noscript>
+        <button>Open session</button>
+    </noscript>
+</form>
+
+{% if lesson %}
+
+<section class="panel">
+
+    <h2>
+        {{ lesson.lesson_date }} ·
+        {{ lesson.start_time }}–{{ lesson.end_time }}
+    </h2>
+
+    {% if lesson.lesson_date > today %}
+    <p class="flash warning">
+        Attendance can be taken on the class date or afterwards.
+    </p>
+    {% endif %}
+
+    {% for s in students %}
+
+    <form method="post"
+          class="attendance-row"
+          data-search="{{ s.name }} {{ s.student_no }}">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <input type="hidden"
+               name="class_id"
+               value="{{ classroom.id }}">
+
+        <input type="hidden"
+               name="lesson_id"
+               value="{{ lesson.id }}">
+
+        <input type="hidden"
+               name="student_id"
+               value="{{ s.id }}">
+
+        <div>
+            <b>{{ s.name }}</b>
+            <small>
+                {{ s.student_no }} · {{ s.status or 'Not marked' }}
+            </small>
+        </div>
+
+        <select name="status"
+                aria-label="Attendance for {{ s.name }}"
+                required
+                {% if lesson.lesson_date>today %}disabled{% endif %}>
+
+            <option value="">Select status</option>
+
+            {% for status in ['Present','Absent','Late','Excused'] %}
+            <option {% if s.status==status %}selected{% endif %}>
+                {{ status }}
+            </option>
+            {% endfor %}
+
+        </select>
+
+        <button {% if lesson.lesson_date>today %}disabled{% endif %}>
+            Save
+        </button>
+
+    </form>
+
+    {% else %}
+    <p class="empty">
+        No eligible students enrolled for this session date.
+    </p>
+    {% endfor %}
+
+</section>
+
+{% else %}
+
+<p class="empty">
+    Schedule a class session under Daily Classes first.
+</p>
+
+{% endif %}
+{% endif %}
+
+{% endblock %}

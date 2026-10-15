@@ -1,0 +1,29 @@
+{% if classes %}
+
+<form class="picker" method="get">
+    <label>
+        Class
+
+        <select name="class_id" onchange="this.form.submit()">
+            {% for c in classes %}
+            <option value="{{ c.id }}"
+                    {% if classroom and c.id==classroom.id %}selected{% endif %}>
+                {{ c.code }} · {{ c.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <noscript>
+        <button>Open class</button>
+    </noscript>
+</form>
+
+{% else %}
+
+<div class="empty">
+    No classes assigned yet.
+    Use the assign-teacher-class command to assign a class and enrol students.
+</div>
+
+{% endif %}

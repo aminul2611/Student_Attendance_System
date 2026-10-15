@@ -1,0 +1,99 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Student Marks{% endblock %}
+
+{% block content %}
+
+<h1>Student Marks</h1>
+
+<p class="muted">
+    Assessment, Mid and Final. Leave an ungraded mark blank.
+</p>
+
+{% include 'teacher/class_picker.html' %}
+
+{% if classroom %}
+
+<section class="panel">
+
+    <p class="limits">
+        Maximum marks:
+        Assessment {{ classroom.assessment_max|float }} ·
+        Mid {{ classroom.mid_max|float }} ·
+        Final {{ classroom.final_max|float }}
+    </p>
+
+    {% for s in students %}
+
+    <form method="post"
+          class="grade-row"
+          data-search="{{ s.name }} {{ s.student_no }}">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <input type="hidden"
+               name="class_id"
+               value="{{ classroom.id }}">
+
+        <input type="hidden"
+               name="student_id"
+               value="{{ s.id }}">
+
+        <div>
+            <b>{{ s.name }}</b>
+            <small>{{ s.student_no }}</small>
+        </div>
+
+        {% for key,label in [
+            ('assessment','Assessment'),
+            ('mid','Mid'),
+            ('final','Final')
+        ] %}
+
+        <label>
+            {{ label }}
+
+            <input type="number"
+                   step="any"
+                   min="0"
+                   max="{{ classroom[key ~ '_max'] }}"
+                   name="{{ key }}"
+                   value="{{ s[key] if s[key] is not none else '' }}"
+                   {% if not s.active %}disabled{% endif %}>
+        </label>
+
+        {% endfor %}
+
+        <div>
+            <small>Total</small>
+
+            <b>
+                {% if s.assessment is not none
+                      and s.mid is not none
+                      and s.final is not none %}
+
+                    {{ (s.assessment+s.mid+s.final)|round(2) }}
+
+                {% else %}
+                    Incomplete
+                {% endif %}
+            </b>
+        </div>
+
+        <button {% if not s.active %}disabled{% endif %}>
+            Save
+        </button>
+
+    </form>
+
+    {% else %}
+    <p class="empty">No students enrolled.</p>
+    {% endfor %}
+
+</section>
+
+{% endif %}
+
+{% endblock %}

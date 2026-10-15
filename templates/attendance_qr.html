@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}QR Attendance{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">QR CHECK-IN</span>
+        <h1>{{ session_row.course }}</h1>
+        <p class="muted">
+            Session date: {{ session_row.session_date }}
+        </p>
+    </div>
+
+    <a class="btn btn-light" href="{{ url_for('attendance') }}">
+        ← Back to attendance
+    </a>
+</div>
+
+<div class="qr-layout">
+    <section class="panel qr-panel">
+        <div class="qr-frame">
+            <img
+                src="data:image/png;base64,{{ qr_data }}"
+                alt="Attendance QR code"
+            >
+        </div>
+
+        <h2>Scan to mark attendance</h2>
+
+        <p>
+            Students must log in on their phone before scanning
+            this code. It only works for this class date.
+        </p>
+
+        <div class="qr-url" style="overflow-wrap: anywhere;">
+            {{ scan_url }}
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-light"
+            id="copy-checkin-link"
+            data-scan-url="{{ scan_url }}"
+        >
+            Copy check-in link
+        </button>
+
+        <p
+            id="copy-status"
+            class="muted"
+            role="status"
+            aria-live="polite"
+        ></p>
+    </section>
+
+    <section class="panel qr-instructions">
+        <span class="feature-icon purple">1</span>
+        <h3>Show this code</h3>
+        <p>
+            Display the QR code on your laptop or projector
+            during class.
+        </p>
+
+        <span class="feature-icon mint">2</span>
+        <h3>Students scan</h3>
+        <p>
+            Each student logs in and scans with their phone camera.
+        </p>
+
+        <span class="feature-icon peach">3</span>
+        <h3>Check reports</h3>
+        <p>
+            Attendance is saved once per student for this session.
+        </p>
+
+        <div class="warning-note">
+            <b>Demo limitation</b>
+            <br>
+            QR links can be shared. This simple version does
+            not prove physical presence.
+        </div>
+    </section>
+</div>
+
+<script>
+    (() => {
+        const copyButton = document.getElementById("copy-checkin-link");
+        const copyStatus = document.getElementById("copy-status");
+
+        copyButton.addEventListener("click", async () => {
+            const scanUrl = copyButton.dataset.scanUrl;
+
+            try {
+                if (!navigator.clipboard || !window.isSecureContext) {
+                    throw new Error("Clipboard unavailable");
+                }
+
+                await navigator.clipboard.writeText(scanUrl);
+                copyStatus.textContent = "Check-in link copied!";
+            } catch (error) {
+                copyStatus.textContent =
+                    "Could not copy automatically. Please select and copy the link above.";
+            }
+        });
+    })();
+</script>
+{% endblock %}

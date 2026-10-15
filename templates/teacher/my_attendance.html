@@ -1,0 +1,88 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}My Attendance{% endblock %}
+
+{% block content %}
+
+<h1>My Attendance</h1>
+
+<p class="muted">
+    Your daily check-in and check-out, recorded in {{ campus_timezone }}.
+</p>
+
+<section class="panel">
+
+    <h2>{{ today }}</h2>
+
+    <p>
+        Check-in:
+        <b>{{ record.check_in|campus_time if record else '—' }}</b>
+
+        · Check-out:
+        <b>{{ record.check_out|campus_time if record else '—' }}</b>
+    </p>
+
+    <form method="post" class="inline">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <button name="action"
+                value="in"
+                {% if record %}disabled{% endif %}>
+            Check in
+        </button>
+
+        <button class="secondary"
+                name="action"
+                value="out"
+                {% if not record or record.check_out is not none %}disabled{% endif %}>
+            Check out
+        </button>
+
+    </form>
+
+</section>
+
+<section class="panel table-wrap">
+
+    <h2>Recent attendance</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for r in history %}
+            <tr>
+                <td>{{ r.work_date }}</td>
+                <td>{{ r.check_in|campus_time }}</td>
+                <td>{{ r.check_out|campus_time }}</td>
+
+                <td>
+                    {% if r.check_out is not none %}
+                        {{ ((r.check_out-r.check_in)/3600)|round(2) }} hours
+                    {% else %}
+                        Not checked out
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="4">No attendance recorded yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</section>
+
+{% endblock %}

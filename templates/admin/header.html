@@ -1,0 +1,23 @@
+<header class="admin-header">
+
+    <div>
+        <strong>Admin Dashboard</strong>
+        <small id="admin-date">{{ today }}</small>
+    </div>
+
+    <div class="header-right">
+
+        <time id="admin-time">--:--:--</time>
+
+        <span class="admin-avatar">
+            {{ g.user.name[:1]|upper }}
+        </span>
+
+        <div>
+            <b>{{ g.user.name }}</b>
+            <small>Administrator</small>
+        </div>
+
+    </div>
+
+</header>

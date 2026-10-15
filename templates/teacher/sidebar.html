@@ -1,0 +1,48 @@
+<aside class="sidebar">
+
+    <a class="brand" href="{{ url_for('teacher.dashboard') }}">
+        <span class="logo">SC</span>
+        <span>
+            Smart Campus
+            <small>Teacher workspace</small>
+        </span>
+    </a>
+
+    <nav aria-label="Teacher menu">
+
+        {% for endpoint,label,symbol in [
+            ('teacher.dashboard','Dashboard','▦'),
+            ('teacher.students','Student Details','♙'),
+            ('teacher.marks','Student Marks','✓'),
+            ('teacher.attendance','Student Attendance','☑'),
+            ('teacher.classes','Daily Classes','▤'),
+            ('teacher.calendar_page','Calendar','▣'),
+            ('teacher.my_attendance','My Attendance','◷'),
+            ('teacher.profile','Teacher Profile','◎'),
+            ('teacher.password','Change Password','⚿')
+        ] %}
+
+        <a href="{{ url_for(endpoint) }}"
+           class="{{ 'active' if request.endpoint==endpoint else '' }}"
+           {% if request.endpoint==endpoint %}aria-current="page"{% endif %}>
+
+            <span aria-hidden="true">{{ symbol }}</span>
+            {{ label }}
+        </a>
+
+        {% endfor %}
+
+    </nav>
+
+    <form class="logout"
+          method="post"
+          action="{{ url_for('logout') }}">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <button type="submit">↪ Logout</button>
+    </form>
+
+</aside>

@@ -1,0 +1,174 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Notices{% endblock %}
+
+{% block content %}
+
+<h1>Notices</h1>
+
+<p class="muted">
+    Only selected teachers and students can see a published notice.
+</p>
+
+<p id="notice-message"
+   class="notice"
+   role="status"
+   aria-live="polite"
+   hidden></p>
+
+<form id="notice-form"
+      class="panel form-card notice-form"
+      method="post"
+      action="{{ url_for('admin_portal.save_notice') }}"
+      data-ajax-form
+      data-message="notice-message"
+      data-reset="notice"
+      data-page-url="{{ url_for('admin_portal.notices') }}">
+
+    <h2 id="notice-form-heading">
+        {{ 'Edit notice' if editing else 'Create notice' }}
+    </h2>
+
+    <input type="hidden"
+           name="csrf_token"
+           value="{{ csrf_token() }}">
+
+    <input type="hidden"
+           name="notice_id"
+           value="{{ editing.id if editing else '' }}">
+
+    <label>
+        Title
+
+        <input name="title"
+               value="{{ editing.title if editing else '' }}"
+               maxlength="140"
+               required>
+    </label>
+
+    <label>
+        Message
+
+        <textarea name="body"
+                  rows="5"
+                  maxlength="5000"
+                  required>{{ editing.body if editing else '' }}</textarea>
+    </label>
+
+    <label>
+        Status
+
+        <select name="active">
+
+            <option value="1"
+                    {% if not editing or editing.active %}selected{% endif %}>
+                Published
+            </option>
+
+            <option value="0"
+                    {% if editing and not editing.active %}selected{% endif %}>
+                Draft
+            </option>
+
+        </select>
+    </label>
+
+    <h3>Select recipients</h3>
+
+    <label>
+        Find a teacher or student
+
+        <input id="recipient-search"
+               type="search"
+               placeholder="Name, email or Student ID">
+    </label>
+
+    <p class="muted">
+        <span id="recipient-count">
+            {{ selected_ids|length }}
+        </span>
+        selected
+    </p>
+
+    <div class="admin-forms">
+
+        {% for role, label in [
+            ('teacher', 'Teachers'),
+            ('student', 'Students')
+        ] %}
+
+        <fieldset class="recipient-group">
+
+            <legend>{{ label }}</legend>
+
+            {% for person in people if person.role==role %}
+
+            <label class="recipient-option"
+                   data-search="{{ person.name }} {{ person.email }} {{ person.student_no or '' }}">
+
+                <input type="checkbox"
+                       name="recipients"
+                       value="{{ person.id }}"
+                       {% if person.id in selected_ids %}checked{% endif %}>
+
+                <span>
+                    {{ person.name }}
+
+                    <small>
+                        {{ person.email }}
+
+                        {% if person.student_no %}
+                            · {{ person.student_no }}
+                        {% endif %}
+
+                        {% if not person.active %}
+                            · Disabled account
+                        {% endif %}
+                    </small>
+                </span>
+
+            </label>
+
+            {% else %}
+
+            <p class="muted">
+                No {{ label|lower }} found.
+            </p>
+
+            {% endfor %}
+
+        </fieldset>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="form-actions">
+
+        <button type="submit">Save notice</button>
+
+        <a id="cancel-notice-edit"
+           class="button secondary"
+           href="{{ url_for('admin_portal.notices') }}"
+           {% if not editing %}hidden{% endif %}>
+            Cancel edit
+        </a>
+
+    </div>
+
+</form>
+
+<section class="panel">
+
+    <h2>All notices</h2>
+
+    <div id="notice-list">
+        {% include 'admin/notice_list.html' %}
+    </div>
+
+</section>
+
+<script src="{{ url_for('static', filename='admin/forms.js') }}"
+        defer></script>
+
+{% endblock %}

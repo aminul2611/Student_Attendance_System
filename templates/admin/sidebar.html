@@ -1,0 +1,62 @@
+<aside class="admin-sidebar">
+
+    <a class="brand"
+       href="{{ url_for('admin_portal.dashboard') }}">
+
+        <span class="brand-icon">SC</span>
+
+        <span>
+            Smart Campus
+            <small>Administration</small>
+        </span>
+
+    </a>
+
+    <p class="menu-label">MANAGEMENT</p>
+
+    <nav aria-label="Admin navigation">
+
+        {% for endpoint, label, icon in [
+            ('admin_portal.dashboard', 'Dashboard', '▦'),
+            ('admin_portal.teacher_attendance', 'Teacher Attendance', '◷'),
+            ('students', 'Student Details', '♙'),
+            ('tasks', 'Tasks', '✓'),
+            ('admin_portal.notices', 'Notices', '▤'),
+            ('admin_portal.profile', 'Profile', '◎')
+        ] %}
+
+        <a href="{{ url_for(endpoint) }}"
+           class="{{ 'active' if request.endpoint==endpoint else '' }}"
+
+           {% if request.endpoint==endpoint %}
+               aria-current="page"
+           {% endif %}
+
+           {% if endpoint=='admin_portal.notices' %}
+               target="_blank"
+               rel="noopener"
+           {% endif %}>
+
+            <span aria-hidden="true">{{ icon }}</span>
+
+            {{ label }}
+
+        </a>
+
+        {% endfor %}
+
+    </nav>
+
+    <form class="logout"
+          method="post"
+          action="{{ url_for('logout') }}">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
+
+        <button type="submit">↪ Logout</button>
+
+    </form>
+
+</aside>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<{% extends 'teacher/base.html' %}
+
+{% block title %}Student Details{% endblock %}
+
+{% block content %}
+
+<h1>Student Details</h1>
+<p class="muted">Students enrolled in your assigned class.</p>
+
+{% include 'teacher/class_picker.html' %}
+
+{% if classroom %}
+
+<section class="panel table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Registered</th>
+                <th>Account</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for s in students %}
+            <tr data-search="{{ s.name }} {{ s.student_no }} {{ s.email }}">
+                <td>{{ s.student_no }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.created_at[:10] }}</td>
+                <td>{{ 'Active' if s.active else 'Disabled' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">No students enrolled.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endif %}
+
+{% endblock %}

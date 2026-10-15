@@ -1,0 +1,91 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Daily Classes{% endblock %}
+
+{% block content %}
+
+<h1>Daily Classes</h1>
+<p class="muted">Schedule sessions for your assigned classes.</p>
+
+{% include 'teacher/class_picker.html' %}
+
+{% if classroom %}
+
+<form method="post" class="panel form-grid">
+
+    <input type="hidden"
+           name="csrf_token"
+           value="{{ csrf_token() }}">
+
+    <input type="hidden"
+           name="class_id"
+           value="{{ classroom.id }}">
+
+    <label>
+        Class date
+        <input type="date"
+               name="lesson_date"
+               value="{{ today }}"
+               required>
+    </label>
+
+    <label>
+        Start time
+        <input type="time" name="start_time" required>
+    </label>
+
+    <label>
+        End time
+        <input type="time" name="end_time" required>
+    </label>
+
+    <label>
+        Room
+        <input name="room" maxlength="100">
+    </label>
+
+    <label>
+        Topic
+        <input name="topic" maxlength="200">
+    </label>
+
+    <div class="form-action">
+        <button>Add class session</button>
+    </div>
+
+</form>
+
+<section class="panel">
+
+    <h2>Class schedule</h2>
+
+    {% for l in lessons %}
+
+    <a class="list-row"
+       data-search="{{ l.topic }} {{ l.lesson_date }}"
+       href="{{ url_for('teacher.attendance', class_id=classroom.id, lesson_id=l.id) }}">
+
+        <span>
+            <b>
+                {{ l.lesson_date }} ·
+                {{ l.start_time }}–{{ l.end_time }}
+            </b>
+
+            <small>
+                {{ l.topic or 'Class session' }} ·
+                {{ l.room or 'Room not set' }}
+            </small>
+        </span>
+
+        <span class="link">Attendance →</span>
+    </a>
+
+    {% else %}
+    <p class="empty">No sessions scheduled yet.</p>
+    {% endfor %}
+
+</section>
+
+{% endif %}
+
+{% endblock %}

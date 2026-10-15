@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>
+        {% block title %}Admin Dashboard{% endblock %}
+        · Smart Campus
+    </title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='admin/layout.css') }}">
+
+    <script src="{{ url_for('static', filename='admin/dashboard.js') }}"
+            defer></script>
+</head>
+
+<body data-timezone="{{ campus_timezone }}">
+
+{% include 'admin/sidebar.html' %}
+
+<div class="admin-workspace">
+
+    {% include 'admin/header.html' %}
+
+    <main class="admin-content">
+
+        {% for kind, message in get_flashed_messages(with_categories=true) %}
+        <p class="notice {{ kind }}" role="status">
+            {{ message }}
+        </p>
+        {% endfor %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+    <footer>
+        Smart Campus · {{ developer_name }}
+    </footer>
+
+</div>
+
+</body>
+</html>

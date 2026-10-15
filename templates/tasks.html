@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks · Smart Campus{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">STAY ORGANIZED</span>
+        <h1>Tasks & assignments</h1>
+
+        <p class="muted">
+            Manage deadlines, priorities and individual progress.
+        </p>
+    </div>
+
+    {% if g.user.role == 'admin' %}
+        <a
+            class="btn btn-light"
+            href="{{ url_for('export_data', kind='tasks') }}"
+        >
+            Export tasks CSV
+        </a>
+    {% endif %}
+</div>
+
+{% if g.user.role == 'admin' %}
+<section class="panel form-panel">
+    <div class="panel-head">
+        <div>
+            <h2>Create a task</h2>
+
+            <p>
+                Assign to one student or all currently active students.
+                Each student gets an independent status.
+            </p>
+        </div>
+
+        <span class="tiny-icon">＋</span>
+    </div>
+
+    <form
+        method="post"
+        action="{{ url_for('add_task') }}"
+        class="form-grid"
+    >
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+        <label>
+            Task title
+
+            <input
+                name="title"
+                placeholder="e.g. Cloud architecture report"
+                required
+            >
+        </label>
+
+        <label>
+            Due date
+            <input type="date" name="due_date" min="{{ today }}">
+        </label>
+
+        <label>
+            Priority
+
+            <select name="priority">
+                <option>Medium</option>
+                <option>High</option>
+                <option>Low</option>
+            </select>
+        </label>
+
+        <label>
+            Assign to
+
+            <select name="assigned_to">
+                <option value="">All currently active students</option>
+
+                {% for student in students %}
+                    <option value="{{ student.id }}">
+                        {{ student.name }} ({{ student.student_no }})
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label class="span-all">
+            Description
+
+            <textarea
+                name="description"
+                rows="3"
+                placeholder="Task details or instructions..."
+            ></textarea>
+        </label>
+
+        <div class="span-all form-actions">
+            <button type="submit" class="btn btn-primary">
+                ＋ Create task
+            </button>
+        </div>
+    </form>
+</section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>{{ 'All assignments' if g.user.role == 'admin' else 'My tasks' }}</h2>
+            <p>{{ tasks|length }} assignment(s) listed</p>
+        </div>
+    </div>
+
+    {% if tasks %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Assigned to</th>
+                        <th>Deadline</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <b>{{ task.title }}</b>
+
+                            <small class="table-sub">
+                                {{ task.description or '' }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {% if g.user.role == 'admin' %}
+                                {{ task.student_name or 'Unassigned' }}
+                            {% else %}
+                                Me
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if task.due_date and task.due_date < today and task.status != 'Completed' %}
+                                <span class="overdue">
+                                    {{ task.due_date }} · Overdue
+                                </span>
+                            {% else %}
+                                {{ task.due_date or '—' }}
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="priority priority-{{ task.priority|lower }}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="status-pill {{ 'complete' if task.status == 'Completed' else '' }}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <div class="inline-actions">
+                                <form
+                                    method="post"
+                                    action="{{ url_for('toggle_task', task_id=task.id) }}"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <select
+                                        name="status"
+                                        aria-label="Status for {{ task.title }}"
+                                    >
+                                        {% for status in ['Pending', 'In Progress', 'Completed'] %}
+                                            <option
+                                                value="{{ status }}"
+                                                {% if task.status == status %}selected{% endif %}
+                                            >
+                                                {{ status }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-light btn-small"
+                                    >
+                                        Save
+                                    </button>
+                                </form>
+
+                                {% if g.user.role == 'admin' %}
+                                    <form
+                                        method="post"
+                                        action="{{ url_for('delete_task', task_id=task.id) }}"
+                                        onsubmit="return confirm('Delete this assignment?')"
+                                    >
+                                        <input
+                                            type="hidden"
+                                            name="csrf_token"
+                                            value="{{ csrf_token() }}"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-danger btn-small"
+                                        >
+                                            Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <span>✦</span>
+            <b>No tasks yet</b>
+            <p>Assignments will appear here when created.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

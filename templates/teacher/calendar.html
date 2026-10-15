@@ -1,0 +1,59 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Calendar{% endblock %}
+
+{% block content %}
+
+<h1>Calendar</h1>
+
+<form class="picker" method="get">
+
+    <label>
+        Month
+
+        <input type="month"
+               name="month"
+               min="1901-01"
+               max="2099-12"
+               value="{{ month }}"
+               required>
+    </label>
+
+    <button>Show month</button>
+
+</form>
+
+<section class="panel calendar-panel">
+
+    <div class="calendar-grid">
+
+        {% for name in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+        <strong class="weekday">{{ name }}</strong>
+        {% endfor %}
+
+        {% for day in days %}
+
+        <div class="calendar-day
+                    {{ 'outside' if day.month!=month_number else '' }}
+                    {{ 'is-today' if day.isoformat()==today else '' }}">
+
+            <b>{{ day.day }}</b>
+
+            {% for l in lessons if l.lesson_date==day.isoformat() %}
+
+            <a href="{{ url_for('teacher.attendance', class_id=l.class_id, lesson_id=l.id) }}"
+               title="{{ l.name }} · {{ l.topic }}">
+                {{ l.start_time }} · {{ l.code }}
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

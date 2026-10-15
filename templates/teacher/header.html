@@ -1,0 +1,31 @@
+<header class="topbar">
+
+    <div>
+        <strong>Teacher Profile</strong>
+        <small id="live-date">{{ today }}</small>
+    </div>
+
+    <div class="header-right">
+
+        <label class="search">
+            <span class="sr-only">Search this page</span>
+
+            <input id="page-search"
+                   type="search"
+                   placeholder="Search this page">
+        </label>
+
+        <time id="live-time" aria-label="Campus time">
+            --:--:--
+        </time>
+
+        <a class="avatar"
+           href="{{ url_for('teacher.profile') }}"
+           aria-label="Your profile">
+
+            {{ g.user.name[:1]|upper }}
+        </a>
+
+    </div>
+
+</header>

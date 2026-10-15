@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Attendance · Smart Campus{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <section class="auth-card">
+        <span class="eyebrow">CLASS CHECK-IN</span>
+
+        <h1>Confirm attendance</h1>
+
+        <div class="checkin-details">
+            <p>
+                <strong>Course:</strong>
+                {{ session_row.course }}
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                {{ session_row.session_date }}
+            </p>
+
+            <p>
+                <strong>Student:</strong>
+                {{ g.user.name }}
+            </p>
+
+            <p>
+                <strong>Student ID:</strong>
+                {{ g.user.student_no }}
+            </p>
+        </div>
+
+        <p class="muted">
+            Press the button below before the QR session expires.
+        </p>
+
+        <form method="post" class="stack">
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <button type="submit" class="btn btn-primary btn-full">
+                ✓ Confirm attendance
+            </button>
+        </form>
+
+        <p class="auth-bottom">
+            <a href="{{ url_for('attendance') }}">Cancel</a>
+        </p>
+    </section>
+</div>
+{% endblock %}
