@@ -1,0 +1,540 @@
+.ap-page {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 28px;
+    color: #34465b;
+}
+
+.ap-page,
+.ap-page * {
+    box-sizing: border-box;
+}
+
+.ap-page [hidden] {
+    display: none !important;
+}
+
+.ap-page .ap-heading {
+    margin-bottom: 25px;
+}
+
+.ap-page .ap-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: #70877b;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.ap-page h1 {
+    margin: 0;
+    color: #293e34;
+    font-size: 30px;
+    line-height: 1.3;
+    letter-spacing: -.7px;
+}
+
+.ap-page p {
+    margin: 7px 0 0;
+    color: #758478;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Account banner */
+.ap-page .ap-identity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding: 25px 28px;
+    border: 1px solid #d3e3d9;
+    border-radius: 18px;
+    background: linear-gradient(115deg, #edf6f0, #fcfefc);
+    box-shadow: 0 5px 18px rgb(48 78 57 / 3%);
+}
+
+.ap-page .ap-identity-person {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    min-width: 0;
+}
+
+.ap-page .ap-identity-person > div {
+    min-width: 0;
+}
+
+.ap-page .ap-avatar {
+    display: grid;
+    flex: 0 0 62px;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border: 3px solid #fff;
+    border-radius: 18px;
+    background: #d9ebdf;
+    color: #54765e;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.ap-page .ap-identity h2 {
+    margin: 0;
+    color: #395640;
+    font-size: 21px;
+    line-height: 1.5;
+}
+
+.ap-page .ap-identity p {
+    color: #708979;
+    overflow-wrap: anywhere;
+}
+
+.ap-page .ap-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    padding: 9px 13px;
+    border: 1px solid #d5e5da;
+    border-radius: 20px;
+    background: #fff;
+    color: #63806d;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ap-page .ap-role > span {
+    color: #84a990;
+    font-size: 8px;
+}
+
+/* Equal-height form cards */
+.ap-page .admin-profile-grid.ap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 24px;
+    margin: 0;
+}
+
+.ap-page .ap-grid > form.ap-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 25px;
+    border: 1px solid #dbe7df;
+    border-top: 3px solid #9dbea8;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 7px 24px rgb(42 57 75 / 4%);
+}
+
+.ap-page .ap-grid > form.ap-security {
+    border-color: #e3dced;
+    border-top-color: #b6a3ce;
+}
+
+.ap-page .ap-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+.ap-page .ap-card-icon {
+    display: grid;
+    flex: 0 0 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid #dae8de;
+    border-radius: 13px;
+    background: #edf5ef;
+    color: #759680;
+    font-size: 24px;
+}
+
+.ap-page .ap-card-heading h2 {
+    margin: 0;
+    color: #405d49;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.ap-page .ap-card-heading p {
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+.ap-page .ap-security .ap-card-heading {
+    border-bottom-color: #eee9f3;
+}
+
+.ap-page .ap-security .ap-card-icon {
+    border-color: #e5dced;
+    background: #f2edf8;
+    color: #9a83b0;
+}
+
+.ap-page .ap-security .ap-card-heading h2 {
+    color: #7b668f;
+}
+
+.ap-page .ap-security p {
+    color: #93839f;
+}
+
+/* Form fields */
+.ap-page .ap-fields {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.ap-page .ap-password-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.ap-page .ap-card label {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    color: #62796a;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+.ap-page .ap-card input:not([type="hidden"]) {
+    display: block;
+    width: 100%;
+    min-height: 45px;
+    margin: 8px 0 0;
+    padding: 12px 13px;
+    border: 1px solid #d9e5dd;
+    border-radius: 10px;
+    background: #fcfefd;
+    color: #405b49;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    box-shadow: none;
+}
+
+.ap-page .ap-card input::placeholder {
+    color: #9baaa0;
+    font-size: 12px;
+}
+
+.ap-page .ap-card input:focus {
+    outline: none;
+    border-color: #9cbea7;
+    box-shadow: 0 0 0 3px rgb(150 188 163 / 13%);
+}
+
+.ap-page .ap-card input[readonly] {
+    background: #f3f7f4;
+    color: #83988a;
+}
+
+.ap-page .ap-card label small {
+    display: block;
+    margin-top: 7px;
+    color: #98a59c;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.7;
+}
+
+.ap-page .ap-security label {
+    color: #897498;
+}
+
+.ap-page .ap-security input:not([type="hidden"]) {
+    border-color: #e2d9ec;
+    background: #fefcff;
+    color: #735e83;
+}
+
+.ap-page .ap-security input:focus {
+    border-color: #b39acb;
+    box-shadow: 0 0 0 3px rgb(176 150 203 / 13%);
+}
+
+.ap-page .ap-security input::placeholder {
+    color: #b0a2bb;
+}
+
+.ap-page .ap-security-note {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #e9e1f1;
+    border-radius: 10px;
+    background: #faf7fd;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+/* Footers stay aligned */
+.ap-page .ap-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #edf1ee;
+}
+
+.ap-page .ap-card-footer > span {
+    color: #9aaa9f;
+    font-size: 10px;
+}
+
+.ap-page .ap-card-footer button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-height: 42px;
+    margin: 0;
+    padding: 11px 17px;
+    border: 1px solid #c5dccd;
+    border-radius: 10px;
+    background: #deeee4;
+    color: #50765c;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.ap-page .ap-card-footer button:hover:not(:disabled) {
+    background: #cee4d6;
+}
+
+.ap-page .ap-security .ap-card-footer {
+    border-top-color: #eee9f3;
+}
+
+.ap-page .ap-security .ap-card-footer > span {
+    color: #ad9bbd;
+}
+
+.ap-page .ap-security .ap-card-footer button {
+    border-color: #dccce9;
+    background: #eee5f7;
+    color: #8a6ca1;
+}
+
+.ap-page .ap-security .ap-card-footer button:hover:not(:disabled) {
+    background: #e2d4ef;
+}
+
+.ap-page .ap-card-footer button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+.ap-page .ap-card .notice:not([hidden]) {
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.ap-page button:focus-visible {
+    outline: 3px solid #bbd1c2;
+    outline-offset: 3px;
+}
+
+@media (max-width: 950px) {
+    .ap-page .ap-password-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 750px) {
+    .ap-page .admin-profile-grid.ap-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ap-page .ap-identity {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 500px) {
+    .ap-page h1 {
+        font-size: 26px;
+    }
+
+    .ap-page .ap-identity,
+    .ap-page .ap-grid > form.ap-card {
+        padding: 19px;
+        border-radius: 15px;
+    }
+
+    .ap-page .ap-identity h2 {
+        font-size: 17px;
+    }
+
+    .ap-page .ap-avatar {
+        flex-basis: 50px;
+        width: 50px;
+        height: 50px;
+        font-size: 17px;
+    }
+
+    .ap-page .ap-card-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ap-page .ap-card-footer button {
+        width: 100%;
+    }
+}
+/* Compact profile heading */
+.ap-page h1 {
+    margin: 5px 0 6px;
+    font-size: 24px;
+}
+
+.ap-page .ap-heading {
+    margin-bottom: 16px;
+}
+
+/* Compact account banner */
+.ap-page .ap-account,
+.ap-page .ap-hero,
+.ap-page .ap-profile-banner {
+    min-height: 0;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 16px 20px;
+    border-radius: 14px;
+}
+
+.ap-page .ap-account h2,
+.ap-page .ap-hero h2,
+.ap-page .ap-profile-banner h2 {
+    margin: 4px 0;
+    font-size: 18px;
+}
+
+.ap-page .ap-account p,
+.ap-page .ap-hero p,
+.ap-page .ap-profile-banner p {
+    margin: 4px 0 0;
+    font-size: 12px;
+}
+
+.ap-page .ap-avatar {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 17px;
+}
+/* Compact administrator account banner */
+.ap-page .ap-identity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    height: auto;
+    min-height: 0;
+    margin: 0 0 18px;
+    padding: 14px 18px;
+    border-radius: 13px;
+}
+
+.ap-page .ap-identity-person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.ap-page .ap-identity-person > div {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.ap-page .ap-identity .ap-avatar {
+    display: grid;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #cfe2d5;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.ap-page .ap-identity .ap-eyebrow {
+    display: block;
+    margin: 0 0 3px;
+    font-size: 8px;
+    line-height: 1.3;
+    letter-spacing: 1px;
+}
+
+.ap-page .ap-identity h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.ap-page .ap-identity p {
+    margin: 4px 0 0;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.ap-page .ap-identity .ap-role {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+@media (max-width: 550px) {
+    .ap-page .ap-identity {
+        padding: 12px 14px;
+    }
+
+    .ap-page .ap-identity-person {
+        width: 100%;
+    }
+
+    .ap-page .ap-identity .ap-role {
+        margin-left: 52px;
+    }
+}

@@ -1,0 +1,590 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ section_title }} · Smart Campus{% endblock %}
+{% block page_name %}{{ section_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='student/portal.css', v='1') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="sp-page">
+
+    <header class="sp-heading">
+        <div>
+            <span class="sp-eyebrow">STUDENT WORKSPACE</span>
+
+            <h1>
+                {% if section == 'dashboard' %}
+                    Welcome, {{ g.user.name }}!
+                {% else %}
+                    {{ section_title }}
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if section == 'dashboard' %}
+                    Your classes, progress and campus updates.
+                {% elif section == 'classes' %}
+                    Classes and routines assigned by your admin.
+                {% elif section == 'tasks' %}
+                    Keep track of your assigned work.
+                {% elif section == 'attendance' %}
+                    Attendance recorded by your teachers.
+                {% elif section == 'results' %}
+                    Your assessment, midterm and final marks.
+                {% elif section == 'notices' %}
+                    Updates sent directly to your account.
+                {% else %}
+                    Manage your personal details and password.
+                {% endif %}
+            </p>
+        </div>
+
+        <span class="sp-id">
+            ID: {{ g.user.student_no or 'Not assigned' }}
+        </span>
+    </header>
+
+    {% if section == 'dashboard' %}
+
+    <div class="sp-stats">
+        {% for label, value, icon, color in [
+            ('Assigned classes', classes|length, '▤', 'green'),
+            ('Attendance', attendance_percentage|string ~ '%', '◷', 'blue'),
+            ('Pending tasks', tasks|length - completed, '✓', 'purple'),
+            ('My notices', notices|length, '▧', 'orange')
+        ] %}
+        <article class="sp-stat">
+            <span class="sp-icon {{ color }}">{{ icon }}</span>
+
+            <div>
+                <small>{{ label }}</small>
+                <strong>{{ value }}</strong>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="sp-two-columns">
+
+        <section class="sp-card">
+            <div class="sp-card-title">
+                <h2>Today's classes</h2>
+                <span class="sp-badge">{{ daily|length }}</span>
+            </div>
+
+            {% for lesson in daily %}
+            <article class="sp-session">
+                <div>
+                    <span class="sp-code">{{ lesson.code }}</span>
+                    <h3>{{ lesson.name }}</h3>
+                    <p>
+                        {{ lesson.topic or 'Class session' }}
+                        · {{ lesson.room or 'Room not set' }}
+                    </p>
+                </div>
+
+                <span class="sp-time">
+                    {{ lesson.start_time }}–{{ lesson.end_time }}
+                </span>
+            </article>
+            {% else %}
+            <div class="sp-empty">
+                <span>◷</span>
+                <h3>No classes scheduled today</h3>
+                <p>Your scheduled sessions will appear here.</p>
+            </div>
+            {% endfor %}
+        </section>
+
+        <section class="sp-card">
+            <div class="sp-card-title">
+                <h2>Latest notices</h2>
+
+                <a href="{{ url_for('student_portal.page', section='notices') }}">
+                    View all →
+                </a>
+            </div>
+
+            {% for notice in notices[:3] %}
+            <details class="sp-notice">
+                <summary>{{ notice.title }}</summary>
+
+                <small>
+                    {{ notice.author }}
+                    · {{ notice.created_at[:16]|replace('T', ' ') }}
+                </small>
+
+                <div class="sp-notice-body">{{ notice.body }}</div>
+            </details>
+            {% else %}
+            <div class="sp-empty">
+                <span>▧</span>
+                <h3>No notices yet</h3>
+                <p>Updates from your campus will appear here.</p>
+            </div>
+            {% endfor %}
+        </section>
+
+    </div>
+
+    <section class="sp-card">
+        <div class="sp-card-title">
+            <h2>My classes</h2>
+
+            <a href="{{ url_for('student_portal.page', section='classes') }}">
+                View all →
+            </a>
+        </div>
+
+        <div class="sp-class-grid">
+            {% for classroom in classes[:3] %}
+            <article class="sp-class">
+                <span class="sp-code">{{ classroom.code }}</span>
+                <h3>{{ classroom.name }}</h3>
+                <p>{{ classroom.semester }}</p>
+                <small>
+                    {% if classroom.teacher_removed %}
+                        Teacher assignment removed
+                    {% else %}
+                        {{ classroom.teacher_name or 'Teacher not available' }}
+                    {% endif %}
+                </small>
+            </article>
+            {% else %}
+            <div class="sp-empty">
+                <h3>No classes assigned</h3>
+                <p>Your admin will assign your classes.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% elif section in ['classes', 'results'] %}
+
+    <form class="sp-filter" method="get">
+        <label for="sp-semester">Semester</label>
+
+        <select id="sp-semester" name="semester">
+            <option value="">All semesters</option>
+
+            {% for semester in semesters %}
+            <option value="{{ semester }}"
+                    {% if semester == selected_semester %}selected{% endif %}>
+                {{ semester }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button class="sp-button" type="submit">Apply</button>
+    </form>
+
+    {% if section == 'classes' %}
+
+    <div class="sp-class-grid">
+        {% for classroom in visible_classes %}
+        <article class="sp-card sp-course">
+            <div class="sp-card-title">
+                <span class="sp-icon green">▤</span>
+                <span class="sp-badge">{{ classroom.semester }}</span>
+            </div>
+
+            <span class="sp-code">{{ classroom.code }}</span>
+            <h2>{{ classroom.name }}</h2>
+
+            <div class="sp-course-teacher">
+                <small>TEACHER</small>
+
+                <strong>
+                    {% if classroom.teacher_removed %}
+                        Assignment removed by admin
+                    {% else %}
+                        {{ classroom.teacher_name or 'Not available' }}
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="sp-routine">
+                <small>WEEKLY ROUTINE</small>
+
+                {% for slot in (classroom.class_time or '').split(' | ') if slot %}
+                <p>◷ {{ slot }}</p>
+                {% else %}
+                <p>Weekly time not set.</p>
+                {% endfor %}
+            </div>
+
+            {% if classroom.setup_removed %}
+            <p class="sp-note">
+                Closed for new assignments.
+                Your existing class record is retained.
+            </p>
+            {% endif %}
+        </article>
+        {% else %}
+        <section class="sp-card sp-empty">
+            <span>▤</span>
+            <h3>No classes found</h3>
+            <p>Select another semester or contact your admin.</p>
+        </section>
+        {% endfor %}
+    </div>
+
+    {% else %}
+
+    <section class="sp-card">
+        <div class="sp-card-title">
+            <h2>Semester results</h2>
+            <span class="sp-badge">{{ visible_classes|length }} subjects</span>
+        </div>
+
+        <div class="sp-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Semester</th>
+                        <th>Assessment</th>
+                        <th>Midterm</th>
+                        <th>Final</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in visible_classes %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.name }}</strong>
+                            <small>{{ row.code }}</small>
+                        </td>
+
+                        <td>{{ row.semester }}</td>
+
+                        {% for key in ['assessment', 'mid', 'final'] %}
+                        <td>
+                            {{ row[key] if row[key] is not none else '—' }}
+                            / {{ row[key ~ '_max'] }}
+                        </td>
+                        {% endfor %}
+
+                        <td>
+                            {% if row.assessment is not none
+                                  and row.mid is not none
+                                  and row.final is not none %}
+                            <strong class="sp-result">
+                                {{ (row.assessment + row.mid + row.final)|round(2) }}
+                                /
+                                {{ row.assessment_max + row.mid_max + row.final_max }}
+                            </strong>
+                            {% else %}
+                            <span class="sp-badge">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">No subjects found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="sp-note">
+            Marks appear when your teacher saves them.
+            Total appears after all three marks are entered.
+        </p>
+    </section>
+
+    {% endif %}
+
+    {% elif section == 'attendance' %}
+
+    <div class="sp-stats">
+        {% for label in ['Present', 'Absent', 'Late', 'Excused'] %}
+        <article class="sp-stat">
+            <div>
+                <small>{{ label }}</small>
+                <strong>{{ attendance_counts[label] }}</strong>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <section class="sp-card">
+        <div class="sp-card-title">
+            <div>
+                <h2>Class attendance</h2>
+                <p>Present + Late: {{ attendance_percentage }}%</p>
+            </div>
+
+            <a class="sp-button secondary"
+               href="{{ url_for('attendance') }}">
+                QR attendance →
+            </a>
+        </div>
+
+        <div class="sp-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in attendance %}
+                    <tr>
+                        <td>{{ row.lesson_date }}</td>
+
+                        <td>
+                            <strong>{{ row.name }}</strong>
+                            <small>{{ row.code }}</small>
+                        </td>
+
+                        <td>{{ row.start_time }}–{{ row.end_time }}</td>
+
+                        <td>
+                            <span class="sp-status {{ (row.status or 'unmarked')|lower }}">
+                                {{ row.status or 'Not marked' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">
+                            No eligible class sessions yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="sp-note">
+            Includes sessions on or after your joining date,
+            up to today. Not marked is separate from Absent.
+            QR attendance is shown separately.
+        </p>
+    </section>
+
+    {% elif section == 'tasks' %}
+
+    <section class="sp-card">
+        <div class="sp-card-title">
+            <h2>Assigned tasks</h2>
+
+            <span class="sp-badge">
+                {{ completed }} / {{ tasks|length }} completed
+            </span>
+        </div>
+
+        {% for task in tasks %}
+        <article class="sp-task">
+            <div class="sp-task-copy">
+                <h3>{{ task.title }}</h3>
+
+                {% if task.description %}
+                <p class="sp-task-description">{{ task.description }}</p>
+                {% endif %}
+
+                <small>
+                    Due: {{ task.due_date or 'No deadline' }}
+                    · {{ task.priority }} priority
+                </small>
+            </div>
+
+            <form method="post" class="sp-task-form">
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <input type="hidden"
+                       name="action"
+                       value="task_status">
+
+                <input type="hidden"
+                       name="task_id"
+                       value="{{ task.id }}">
+
+                <select name="status"
+                        aria-label="Status for {{ task.title }}">
+                    {% for status in ['Pending', 'In Progress', 'Completed'] %}
+                    <option value="{{ status }}"
+                            {% if task.status == status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <button class="sp-button" type="submit">
+                    Save
+                </button>
+            </form>
+        </article>
+        {% else %}
+        <div class="sp-empty">
+            <span>✓</span>
+            <h3>No tasks assigned</h3>
+            <p>Your assigned work will appear here.</p>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% elif section == 'notices' %}
+
+    <section class="sp-card">
+        <div class="sp-card-title">
+            <h2>My inbox</h2>
+            <span class="sp-badge">{{ notices|length }} notices</span>
+        </div>
+
+        {% for notice in notices %}
+        <details class="sp-notice">
+            <summary>{{ notice.title }}</summary>
+
+            <small>
+                {{ notice.author }}
+                {% if notice.author_role %}
+                    · {{ notice.author_role|title }}
+                {% endif %}
+                · {{ notice.created_at[:16]|replace('T', ' ') }}
+            </small>
+
+            <div class="sp-notice-body">{{ notice.body }}</div>
+        </details>
+        {% else %}
+        <div class="sp-empty">
+            <span>▧</span>
+            <h3>Your inbox is clear</h3>
+            <p>Notices addressed to you will appear here.</p>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% elif section == 'profile' %}
+
+    <div class="sp-two-columns">
+
+        <form class="sp-card sp-profile-form" method="post">
+            <div class="sp-card-title">
+                <h2>Personal information</h2>
+                <span class="sp-icon green">◎</span>
+            </div>
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden" name="action" value="profile">
+
+            <label>
+                Full name
+                <input name="name"
+                       value="{{ g.user.name }}"
+                       maxlength="100"
+                       autocomplete="name"
+                       required>
+            </label>
+
+            <label>
+                Student ID
+                <input value="{{ g.user.student_no or '' }}" readonly>
+            </label>
+
+            <label>
+                Email address
+                <input type="email"
+                       value="{{ g.user.email }}"
+                       readonly>
+            </label>
+
+            <label>
+                Department
+                <input value="{{ details.department if details else '' }}"
+                       readonly>
+            </label>
+
+            <label>
+                Phone
+                <input type="tel"
+                       name="phone"
+                       value="{{ details.phone if details else '' }}"
+                       maxlength="150"
+                       autocomplete="tel">
+            </label>
+
+            <p class="sp-note">
+                Contact your admin to change your ID,
+                email or department.
+            </p>
+
+            <button class="sp-button" type="submit">
+                Save profile →
+            </button>
+        </form>
+
+        <form class="sp-card sp-profile-form" method="post">
+            <div class="sp-card-title">
+                <h2>Change password</h2>
+                <span class="sp-icon purple">⚿</span>
+            </div>
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden" name="action" value="password">
+
+            <label>
+                Current password
+                <input type="password"
+                       name="current_password"
+                       autocomplete="current-password"
+                       required>
+            </label>
+
+            <label>
+                New password
+                <input type="password"
+                       name="new_password"
+                       minlength="8"
+                       maxlength="128"
+                       autocomplete="new-password"
+                       required>
+            </label>
+
+            <label>
+                Confirm new password
+                <input type="password"
+                       name="confirm_password"
+                       minlength="8"
+                       maxlength="128"
+                       autocomplete="new-password"
+                       required>
+            </label>
+
+            <p class="sp-note">
+                After changing your password,
+                sign in again with the new password.
+            </p>
+
+            <button class="sp-button" type="submit">
+                Change password →
+            </button>
+        </form>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

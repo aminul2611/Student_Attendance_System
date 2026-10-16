@@ -6,35 +6,26 @@
 {% block content %}
 
 <link rel="stylesheet"
-      href="{{ url_for('static', filename='admin/student-management.css') }}">
+      href="{{ url_for('static', filename='admin/student-management.css', v='5') }}">
 
 <style>
-.sd-page.student-details-page {
+.student-details-page {
     display: flex;
     flex-direction: column;
     gap: 22px;
 }
 
-.student-details-page > .sd-heading {
-    order: 0;
-    margin-bottom: 0;
-}
-
-.student-details-page > .student-create {
-    order: 1;
-}
-
-.student-details-page > .student-list-panel {
-    order: 2;
-}
-
+.student-details-page > .sd-heading,
 .student-details-page > .sd-card {
     width: 100%;
     min-width: 0;
     margin: 0;
+    order: initial;
 }
 
-/* Add student card */
+.sd-page [hidden] {
+    display: none !important;
+}
 
 .sd-page details.student-create {
     padding: 0;
@@ -42,80 +33,48 @@
     border: 1px solid #dcdffd;
     border-radius: 16px;
     background: #fff;
-    box-shadow: 0 5px 20px rgba(83, 74, 180, 0.06);
 }
 
-.sd-page details.student-create > summary {
+.sd-page .student-create > summary {
     display: flex;
     align-items: center;
     gap: 12px;
     min-height: 72px;
     padding: 18px 24px;
     list-style: none;
-    background: linear-gradient(
-        110deg,
-        #eaf0ff 0%,
-        #f2edff 65%,
-        #faf7ff 100%
-    );
+    background: linear-gradient(110deg, #eaf0ff, #f2edff, #faf7ff);
     color: #4145a5;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.sd-page details.student-create > summary::-webkit-details-marker {
+.sd-page .student-create > summary::-webkit-details-marker {
     display: none;
 }
 
-.sd-page details.student-create > summary::marker {
-    content: "";
-}
-
 .sd-page .student-create-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
     flex: 0 0 36px;
-    width: 36px;
     height: 36px;
+    place-items: center;
     border-radius: 11px;
     background: #6255dc;
     color: #fff;
     font-size: 23px;
-    font-weight: 400;
-    box-shadow: 0 4px 10px rgba(98, 85, 220, 0.18);
 }
 
-.sd-page details.student-create > summary::after {
-    content: "";
-    flex: 0 0 auto;
-    width: 9px;
-    height: 9px;
+.sd-page .student-create > summary::after {
+    content: "⌄";
     margin-left: auto;
-    border-right: 2px solid #7974b8;
-    border-bottom: 2px solid #7974b8;
-    transform: rotate(45deg);
+    color: #7974b8;
 }
 
-.sd-page details.student-create[open] > summary {
+.sd-page .student-create[open] > summary {
     border-bottom: 1px solid #e3e2fa;
 }
 
-.sd-page details.student-create[open] > summary::after {
-    transform: rotate(225deg);
-}
-
-.sd-page details.student-create > summary:hover {
-    background: #e9e6ff;
-}
-
-.sd-page details.student-create > summary:focus-visible {
-    outline: 3px solid #8074e8;
-    outline-offset: -4px;
-}
-
-.sd-page details.student-create > form {
+.sd-page .student-create > form {
     margin: 0;
     padding: 24px;
 }
@@ -124,29 +83,67 @@
     margin: 0 0 22px;
 }
 
-.sd-page .student-create input:focus {
-    outline: none;
-    border-color: #8b80e8;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(98, 85, 220, 0.1);
+.sd-page .sd-filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr auto;
+    align-items: end;
+    gap: 16px;
+    margin-top: 18px;
 }
 
-.sd-page .student-create button[type="submit"] {
-    padding: 12px 20px;
-    background: #6255dc;
-    color: #fff;
+.sd-page .sd-filter-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.sd-page .student-create button[type="submit"]:hover {
-    background: #5143c7;
+.sd-page .sd-filter-note {
+    margin: 14px 0 0;
+    color: #8290a6;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.sd-page .sd-remove {
+    padding: 8px 12px;
+    border: 1px solid #e6c6bf;
+    border-radius: 8px;
+    background: #fbefeb;
+    color: #a3695b;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sd-page .sd-remove:disabled {
+    border-color: #e4e7ec;
+    background: #f4f5f7;
+    color: #9ca5b2;
+    cursor: not-allowed;
+}
+
+.sd-page .sd-remove-note {
+    display: block;
+    margin-top: 5px;
+    color: #939dab;
+    font-size: 10px;
+}
+
+.sd-page .sd-list-footer {
+    margin-top: 14px;
+    color: #8491a6;
+    font-size: 12px;
+}
+
+@media (max-width: 800px) {
+    .sd-page .sd-filter-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 650px) {
-    .sd-page details.student-create > summary {
-        padding: 16px 18px;
-    }
-
-    .sd-page details.student-create > form {
+    .sd-page .student-create > summary,
+    .sd-page .student-create > form {
         padding: 18px;
     }
 }
@@ -156,7 +153,6 @@
 
     <div class="sd-heading">
         <h1>Student Details</h1>
-
         <p class="sd-muted">
             Manage student accounts, class assignments and results.
         </p>
@@ -164,8 +160,7 @@
 
     <details class="sd-card student-create">
         <summary>
-            <span class="student-create-icon"
-                  aria-hidden="true">＋</span>
+            <span class="student-create-icon" aria-hidden="true">＋</span>
             Add student
         </summary>
 
@@ -246,11 +241,82 @@
         </form>
     </details>
 
+    <section class="sd-card student-filter-panel">
+
+        <h2>Find students by class or semester</h2>
+
+        <p class="sd-muted">
+            Choose a semester, a class, or both.
+        </p>
+
+        <form method="get"
+              action="{{ url_for('admin_portal.student_details') }}"
+              class="sd-filter-grid">
+
+            <label>
+                Semester
+                <select name="semester">
+                    <option value="">All semesters</option>
+
+                    {% for semester in semesters %}
+                    <option value="{{ semester }}"
+                            {% if semester == selected_semester %}selected{% endif %}>
+                        {{ semester }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>
+                Class / Subject
+                <select name="class_id">
+                    <option value="">All classes</option>
+
+                    {% for classroom in classes %}
+                    <option value="{{ classroom.id }}"
+                            {% if classroom.id == selected_class_id %}selected{% endif %}>
+                        {{ classroom.code }} — {{ classroom.name }}
+                        {% if classroom.semester %}
+                        · {{ classroom.semester }}
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="sd-filter-actions">
+                <button type="submit" class="sd-btn">
+                    Show students
+                </button>
+
+                <a class="sd-btn secondary"
+                   href="{{ url_for('admin_portal.student_details') }}">
+                    Reset
+                </a>
+            </div>
+
+        </form>
+
+        <p class="sd-filter-note">
+            {% if selected_class %}
+                Selected: {{ selected_class.code }} — {{ selected_class.name }}.
+                Remove only removes this class assignment.
+                Students with marks cannot be removed.
+            {% else %}
+                Select a specific class to remove a student from that class.
+            {% endif %}
+        </p>
+
+    </section>
+
     <section class="sd-card student-list-panel">
 
         <div class="sd-list-heading">
             <div>
-                <h2>All students ({{ students|length }})</h2>
+                <h2>
+                    {{ 'Matching students' if selected_class or selected_semester else 'All students' }}
+                    ({{ students|length }})
+                </h2>
 
                 <p class="sd-muted">
                     Browse and manage students.
@@ -261,7 +327,8 @@
                 Search
                 <input id="student-search"
                        type="search"
-                       placeholder="Name, email, ID or department">
+                       placeholder="Name, email, ID or department"
+                       autocomplete="off">
             </label>
         </div>
 
@@ -275,27 +342,25 @@
                         <th>Details</th>
                         <th>Account</th>
                         <th>Status</th>
+                        {% if selected_class %}
+                        <th>Class assignment</th>
+                        {% endif %}
                     </tr>
                 </thead>
 
                 <tbody>
                     {% for student in students %}
+
                     <tr data-student-row
                         data-search="{{ student.name }} {{ student.email }} {{ student.student_no or '' }} {{ student.department }}">
 
                         <td>
                             <strong>{{ student.name }}</strong>
-
-                            <small>
-                                {{ student.student_no or 'No Student ID' }}
-                            </small>
+                            <small>{{ student.student_no or 'No Student ID' }}</small>
                         </td>
 
                         <td>{{ student.email }}</td>
-
-                        <td>
-                            {{ student.department or '—' }}
-                        </td>
+                        <td>{{ student.department or '—' }}</td>
 
                         <td>
                             <a class="sd-btn secondary"
@@ -332,17 +397,55 @@
                             </form>
                         </td>
 
+                        {% if selected_class %}
+                        <td>
+                            <form method="post"
+                                  data-remove-assignment
+                                  action="{{ url_for('admin_portal.remove_student_class_from_list', student_id=student.id, class_id=selected_class.id) }}">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <input type="hidden"
+                                       name="semester"
+                                       value="{{ selected_semester }}">
+
+                                <button type="submit"
+                                        class="sd-remove"
+                                        aria-label="Remove {{ student.name }} from {{ selected_class.code }}"
+                                        {% if student.has_marks %}disabled{% endif %}>
+                                    Remove
+                                </button>
+
+                            </form>
+
+                            {% if student.has_marks %}
+                            <small class="sd-remove-note">
+                                Locked: marks entered
+                            </small>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+
                     </tr>
                     {% endfor %}
 
                     <tr id="student-empty"
                         {% if students %}hidden{% endif %}>
-                        <td colspan="6">
-                            No students found.
+                        <td colspan="{{ 7 if selected_class else 6 }}">
+                            No matching students found.
                         </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div id="student-visible-count"
+             class="sd-list-footer"
+             role="status"
+             aria-live="polite">
+            {{ students|length }} students
         </div>
 
     </section>
@@ -351,27 +454,42 @@
 
 <script>
 (() => {
+    const page = document.querySelector(".student-details-page");
     const search = document.getElementById("student-search");
     const empty = document.getElementById("student-empty");
+    const count = document.getElementById("student-visible-count");
+    const rows = Array.from(page.querySelectorAll("[data-student-row]"));
 
     function filterStudents() {
-        const query = search.value.trim().toLowerCase();
+        const query = search.value.trim().toLocaleLowerCase();
         let visible = 0;
 
-        document.querySelectorAll("[data-student-row]").forEach(row => {
-            const text = (row.dataset.search || "").toLowerCase();
+        rows.forEach(row => {
+            row.hidden = !(row.dataset.search || "")
+                .toLocaleLowerCase()
+                .includes(query);
 
-            row.hidden = !text.includes(query);
-
-            if (!row.hidden) {
-                visible++;
-            }
+            if (!row.hidden) visible++;
         });
 
         empty.hidden = visible > 0;
+        count.textContent =
+            `Showing ${visible} of ${rows.length} students`;
     }
+
     search.addEventListener("input", filterStudents);
     filterStudents();
+
+    page.querySelectorAll("[data-remove-assignment]").forEach(form => {
+        form.addEventListener("submit", event => {
+            const confirmed = window.confirm(
+                "Remove this student's assignment from the selected class? " +
+                "The student account will remain."
+            );
+
+            if (!confirmed) event.preventDefault();
+        });
+    });
 })();
 </script>
 

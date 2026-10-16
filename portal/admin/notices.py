@@ -57,9 +57,7 @@ def setup_notices(state):
         if (
             not user
             or user["role"] not in (
-                "admin",
-                "teacher",
-                "student",
+                "admin", "teacher", "student"
             )
         ):
             return {"campus_notices": []}
@@ -68,9 +66,7 @@ def setup_notices(state):
             rows = db.execute(
                 """
                 SELECT
-                    n.id,
-                    n.title,
-                    n.body,
+                    n.id, n.title, n.body,
                     n.created_at,
                     u.name AS author
 
@@ -98,28 +94,17 @@ def notice_rows():
         rows = db.execute(
             """
             SELECT n.*, u.name AS author
-
             FROM admin_notices n
-
-            LEFT JOIN users u
-                ON u.id=n.created_by
-
+            LEFT JOIN users u ON u.id=n.created_by
             ORDER BY n.updated_at DESC, n.id DESC
             """
         ).fetchall()
 
         people = db.execute(
             """
-            SELECT
-                r.notice_id,
-                u.name,
-                u.role
-
+            SELECT r.notice_id, u.name, u.role
             FROM admin_notice_recipients r
-
-            JOIN users u
-                ON u.id=r.user_id
-
+            JOIN users u ON u.id=r.user_id
             ORDER BY u.name
             """
         ).fetchall()
@@ -150,20 +135,38 @@ def notices():
         people = db.execute(
             """
             SELECT
-                id,
-                name,
-                email,
-                role,
-                student_no,
-                active
-
+                id, name, email, role,
+                student_no, active
             FROM users
-
             WHERE role IN ('teacher', 'student')
-
             ORDER BY name
             """
         ).fetchall()
+
+        notice_classes = db.execute(
+            """
+            SELECT id, code, name
+            FROM teacher_classes
+            WHERE setup_removed=0
+            ORDER BY code, name
+            """
+        ).fetchall()
+
+        enrolments = db.execute(
+            """
+            SELECT e.student_id, e.class_id
+            FROM teacher_enrolments e
+            JOIN teacher_classes c ON c.id=e.class_id
+            WHERE c.setup_removed=0
+            """
+        ).fetchall()
+
+        student_class_ids = {}
+
+        for row in enrolments:
+            student_class_ids.setdefault(
+                row["student_id"], []
+            ).append(row["class_id"])
 
         notice_id = request.args.get("edit", "").strip()
 
@@ -203,6 +206,8 @@ def notices():
         editing=editing,
         people=people,
         selected_ids=selected_ids,
+        notice_classes=notice_classes,
+        student_class_ids=student_class_ids,
     )
 
 
@@ -213,14 +218,8 @@ def save_notice():
         "notice_id", ""
     ).strip()
 
-    title = request.form.get(
-        "title", ""
-    ).strip()
-
-    body = request.form.get(
-        "body", ""
-    ).strip()
-
+    title = request.form.get("title", "").strip()
+    body = request.form.get("body", "").strip()
     active = request.form.get("active", "")
 
     if (
@@ -261,9 +260,7 @@ def save_notice():
     try:
         recipient_ids = {
             int(value)
-            for value in request.form.getlist(
-                "recipients"
-            )
+            for value in request.form.getlist("recipients")
         }
     except ValueError:
         return jsonify(
@@ -277,10 +274,7 @@ def save_notice():
             message="Select at least one teacher or student.",
         ), 400
 
-    timezone = current_app.extensions[
-        "portal"
-    ]["timezone"]
-
+    timezone = current_app.extensions["portal"]["timezone"]
     timestamp = datetime.now(
         timezone
     ).isoformat(timespec="seconds")
@@ -319,12 +313,10 @@ def save_notice():
             db.execute(
                 """
                 UPDATE admin_notices
-
                 SET title=?,
                     body=?,
                     active=?,
                     updated_at=?
-
                 WHERE id=?
                 """,
                 (
@@ -348,12 +340,8 @@ def save_notice():
             notice_id = db.execute(
                 """
                 INSERT INTO admin_notices(
-                    title,
-                    body,
-                    active,
-                    created_by,
-                    created_at,
-                    updated_at
+                    title, body, active, created_by,
+                    created_at, updated_at
                 )
                 VALUES(?,?,?,?,?,?)
                 """,
@@ -370,8 +358,7 @@ def save_notice():
         db.executemany(
             """
             INSERT INTO admin_notice_recipients(
-                notice_id,
-                user_id
+                notice_id, user_id
             )
             VALUES(?,?)
             """,

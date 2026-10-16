@@ -1,0 +1,370 @@
+/* Admin sidebar */
+aside.admin-sidebar.asc-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 22px 14px 16px;
+    border-right: 1px solid #dce7e0;
+    background: #ffffff;
+    background-image: none;
+    color: #294737;
+    box-shadow: 3px 0 16px rgb(30 64 44 / 3%);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d5e2d9 transparent;
+}
+
+aside.asc-sidebar,
+aside.asc-sidebar * {
+    box-sizing: border-box;
+}
+
+aside.asc-sidebar [hidden] {
+    display: none !important;
+}
+
+/* Branding */
+aside.asc-sidebar a.asc-brand {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    margin: 0 0 28px;
+    padding: 4px 6px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #244632;
+    text-align: left;
+    text-decoration: none;
+}
+
+aside.asc-sidebar .asc-logo {
+    display: grid;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #cfe2d5;
+    border-radius: 12px;
+    background: #e8f3ec;
+    color: #326146;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+aside.asc-sidebar .asc-brand-copy {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+aside.asc-sidebar .asc-brand-copy strong {
+    display: block;
+    margin: 0;
+    color: #254532;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.4;
+    text-align: left;
+    white-space: nowrap;
+}
+
+aside.asc-sidebar .asc-brand-copy small {
+    display: block;
+    margin-top: 4px;
+    color: #647b6c;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+}
+
+aside.asc-sidebar .asc-caption {
+    margin: 0 10px 12px;
+    padding: 0;
+    color: #6b8373;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-align: left;
+}
+
+/* Navigation */
+aside.asc-sidebar nav.asc-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+aside.asc-sidebar nav.asc-nav a.asc-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 45px;
+    margin: 0;
+    padding: 9px 11px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    box-shadow: none;
+    color: #465f50;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: left;
+    text-decoration: none;
+    transition:
+        background-color 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease;
+}
+
+/* Remove inherited decorative elements */
+aside.asc-sidebar nav.asc-nav a.asc-link::before,
+aside.asc-sidebar nav.asc-nav a.asc-link::after {
+    display: none;
+    content: none;
+}
+
+/* Fixed-size icon */
+aside.asc-sidebar nav.asc-nav a.asc-link .asc-icon {
+    display: grid;
+    flex: 0 0 28px;
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    place-items: center;
+    border-radius: 8px;
+    background: #f1f6f3;
+    color: #658573;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+}
+
+/* Keep menu text directly beside the icon */
+aside.asc-sidebar nav.asc-nav a.asc-link .asc-label {
+    display: block;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    font-size: 13px;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: left;
+    white-space: nowrap;
+}
+
+aside.asc-sidebar nav.asc-nav a.asc-link:hover {
+    border-color: #e0ebe3;
+    background: #f3f8f5;
+    color: #2e5a3f;
+}
+
+aside.asc-sidebar nav.asc-nav a.asc-link:hover .asc-icon {
+    background: #e5f0e9;
+    color: #3d6c4e;
+}
+
+/* Selected page */
+aside.asc-sidebar nav.asc-nav a.asc-link.active,
+aside.asc-sidebar nav.asc-nav a.asc-link[aria-current="page"] {
+    border-color: #c9dfd0;
+    background: #e8f3ec;
+    color: #28573b;
+    font-weight: 750;
+    box-shadow: inset 3px 0 0 #6c9d7d;
+}
+
+aside.asc-sidebar nav.asc-nav a.asc-link.active .asc-icon,
+aside.asc-sidebar nav.asc-nav a.asc-link[aria-current="page"] .asc-icon {
+    background: #d5e9dc;
+    color: #326447;
+}
+
+aside.asc-sidebar .asc-dot {
+    display: block;
+    flex: 0 0 5px;
+    width: 5px;
+    height: 5px;
+    margin: 0 2px 0 auto;
+    padding: 0;
+    border-radius: 50%;
+    background: #6b987b;
+}
+
+/* Account and logout */
+aside.asc-sidebar .asc-bottom {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+aside.asc-sidebar .asc-account {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 0 0 12px;
+    padding: 14px 5px;
+    border-top: 1px solid #e3ebe6;
+    text-align: left;
+}
+
+aside.asc-sidebar .asc-avatar {
+    display: grid;
+    flex: 0 0 35px;
+    width: 35px;
+    height: 35px;
+    margin: 0;
+    padding: 0;
+    place-items: center;
+    border: 1px solid #d6e4db;
+    border-radius: 10px;
+    background: #edf5f0;
+    color: #456e53;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+aside.asc-sidebar .asc-account > div {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+aside.asc-sidebar .asc-account strong {
+    display: block;
+    margin: 0;
+    overflow: hidden;
+    color: #355440;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+aside.asc-sidebar .asc-account small {
+    display: block;
+    margin-top: 3px;
+    color: #6c8373;
+    font-size: 10px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+/* Logout */
+aside.asc-sidebar form.logout.asc-logout {
+    position: static;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+aside.asc-sidebar .asc-logout button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 9px;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    padding: 9px 12px;
+    border: 1px solid #ebd2ca;
+    border-radius: 10px;
+    background: #fff5f1;
+    color: #975c4e;
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background-color 160ms ease,
+        border-color 160ms ease;
+}
+
+aside.asc-sidebar .asc-logout button:hover {
+    border-color: #dfb9ad;
+    background: #fae9e2;
+    color: #824b3d;
+}
+
+aside.asc-sidebar .asc-logout-arrow {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* Keyboard focus */
+aside.asc-sidebar a:focus-visible,
+aside.asc-sidebar button:focus-visible {
+    outline: 3px solid #a9cdb5;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    aside.asc-sidebar nav.asc-nav a.asc-link,
+    aside.asc-sidebar .asc-logout button {
+        transition: none;
+    }
+}
+
+/* logout */
+
+aside.asc-sidebar .asc-logout button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 13px;
+    border: 1px solid #efd9d5;
+    border-radius: 10px;
+    background: #fff7f5;
+    color: #a44e42;
+    font-size: 12px;
+    font-weight: 650;
+    box-shadow: none;
+    cursor: pointer;
+    transition:
+        background-color 160ms ease,
+        border-color 160ms ease;
+}
+
+aside.asc-sidebar .asc-logout button:hover {
+    border-color: #dfb7ae;
+    background: #fbe9e4;
+}
+
+aside.asc-sidebar .asc-logout-arrow {
+    display: none;
+}

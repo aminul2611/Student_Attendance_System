@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
 
@@ -13,11 +14,157 @@
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='dashboard.css') }}">
+
+    {% if g.user and g.user.role == 'student'
+          and request.endpoint not in ['index', 'login', 'register'] %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='student-workspace.css', v='1') }}">
+    {% endif %}
+
+    <style>
+        .campus-flash-list {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .campus-flash-list .flash {
+            margin: 0;
+            padding: 13px 16px;
+            border: 1px solid #dce5df;
+            border-radius: 10px;
+            background: #f4f8f5;
+            color: #365442;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .campus-flash-list .flash.success {
+            border-color: #c9e2d1;
+            background: #edf8f0;
+            color: #2e6641;
+        }
+
+        .campus-flash-list .flash.danger,
+        .campus-flash-list .flash.error {
+            border-color: #edcfc9;
+            background: #fff2ef;
+            color: #934b40;
+        }
+
+        .campus-flash-list .flash.warning {
+            border-color: #eadcb8;
+            background: #fff9eb;
+            color: #806326;
+        }
+
+        .campus-flash-list .flash.info {
+            border-color: #d2e1ee;
+            background: #eff6fc;
+            color: #3f6485;
+        }
+
+        /* Public pages */
+        body.campus-public {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .campus-public .public-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px max(20px, calc((100% - 1180px) / 2));
+            border-bottom: 1px solid #e3e9e5;
+            background: #fff;
+        }
+
+        .campus-public .public-topbar .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            color: #294533;
+            text-decoration: none;
+        }
+
+        .campus-public .public-topbar .brand-icon {
+            display: grid;
+            flex: 0 0 40px;
+            width: 40px;
+            height: 40px;
+            place-items: center;
+            border: 1px solid #d4e4d9;
+            border-radius: 12px;
+            background: #eaf4ed;
+            color: #376448;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: none;
+        }
+
+        .campus-public .public-brand-copy {
+            font-size: 15px;
+            font-weight: 750;
+            line-height: 1.4;
+        }
+
+        .campus-public .public-brand-copy small {
+            display: block;
+            margin-top: 3px;
+            color: #667e6e;
+            font-size: 10px;
+            font-weight: 400;
+        }
+
+        .campus-public main.public-content {
+            width: min(1180px, calc(100% - 36px));
+            margin: 0 auto;
+            padding: 22px 0;
+        }
+
+        .campus-public .public-footer {
+            padding: 18px;
+            color: #697c70;
+            font-size: 11px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        @media (max-width: 550px) {
+            .campus-public .public-topbar {
+                padding: 14px 18px;
+            }
+
+            .campus-public .public-brand-copy {
+                font-size: 14px;
+            }
+
+            .campus-public .public-brand-copy small {
+                max-width: 145px;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
 </head>
 
-<body class="{{ 'workspace role-' ~ g.user.role if g.user else '' }}">
+{% set public_page = request.endpoint in [
+    'index',
+    'login',
+    'register'
+] %}
 
-{% if g.user %}
+{% set show_workspace = g.user and not public_page %}
+
+{% set current_section = (
+    request.view_args or {}
+).get('section') %}
+
+<body class="{{ 'workspace role-' ~ g.user.role if show_workspace else 'campus-public' }}">
+
+{% if show_workspace %}
 
 <aside class="campus-sidebar">
 
@@ -30,55 +177,92 @@
             Smart Campus
             <small>{{ g.user.role|title }} workspace</small>
         </span>
+
     </a>
 
     <div class="sidebar-caption">WORKSPACE</div>
 
     <nav class="campus-nav" aria-label="Main navigation">
 
-        <a href="{{ url_for('dashboard') }}"
-           class="{{ 'selected' if request.endpoint == 'dashboard' else '' }}">
+        {% if g.user.role == 'student' %}
 
-            <span aria-hidden="true">▦</span>
-            Dashboard
-        </a>
+            {% for section_key, label, icon in [
+                ('dashboard', 'Dashboard', '▦'),
+                ('classes', 'My Classes', '▤'),
+                ('tasks', 'Tasks', '✓'),
+                ('attendance', 'My Attendance', '◷'),
+                ('results', 'My Results', '↗'),
+                ('notices', 'My Notices', '▧'),
+                ('profile', 'My Profile', '◎')
+            ] %}
 
-        <a href="{{ url_for('tasks') }}"
-           class="{{ 'selected' if request.endpoint == 'tasks' else '' }}">
+            {% set selected = (
+                request.endpoint == 'student_portal.page'
+                and current_section == section_key
+            ) or (
+                section_key == 'attendance'
+                and request.endpoint in [
+                    'attendance',
+                    'scan_attendance'
+                ]
+            ) %}
 
-            <span aria-hidden="true">✓</span>
-            {{ 'Homework' if g.user.role == 'teacher' else 'Tasks' }}
-        </a>
+            <a href="{{ url_for('student_portal.page', section=section_key) }}"
+               class="{{ 'selected' if selected else '' }}"
+               {% if selected %}
+                   aria-current="page"
+               {% endif %}>
 
-        <a href="{{ url_for('attendance') }}"
-           class="{{ 'selected' if request.endpoint == 'attendance' else '' }}">
+                <span aria-hidden="true">{{ icon }}</span>
+                {{ label }}
 
-            <span aria-hidden="true">◷</span>
-            Attendance
-        </a>
+            </a>
 
-        {% if g.user.role == 'admin' %}
+            {% endfor %}
 
-        <a href="{{ url_for('students') }}"
-           class="{{ 'selected' if request.endpoint == 'students' else '' }}">
+        {% else %}
 
-            <span aria-hidden="true">♙</span>
-            Students
-        </a>
+            {% for endpoint, label, icon in [
+                ('dashboard', 'Dashboard', '▦'),
+                ('tasks', 'Homework' if g.user.role == 'teacher' else 'Tasks', '✓'),
+                ('attendance', 'Attendance', '◷')
+            ] %}
 
-        <a href="{{ url_for('reports') }}"
-           class="{{ 'selected' if request.endpoint == 'reports' else '' }}">
+            <a href="{{ url_for(endpoint) }}"
+               class="{{ 'selected' if request.endpoint == endpoint else '' }}"
+               {% if request.endpoint == endpoint %}
+                   aria-current="page"
+               {% endif %}>
 
-            <span aria-hidden="true">↗</span>
-            Reports
-        </a>
+                <span aria-hidden="true">{{ icon }}</span>
+                {{ label }}
 
-        <a href="{{ url_for('admin_portal.teacher_attendance') }}"
-           class="{{ 'selected' if request.endpoint == 'admin_portal.teacher_attendance' else '' }}">
+            </a>
 
-            <span aria-hidden="true">◷</span>
-            Teacher Attendance
-        </a>
+            {% endfor %}
+
+            {% if g.user.role == 'admin' %}
+
+                {% for endpoint, label, icon in [
+                    ('students', 'Students', '♙'),
+                    ('reports', 'Reports', '↗'),
+                    ('admin_portal.teacher_attendance', 'Teacher Attendance', '◷')
+                ] %}
+
+                <a href="{{ url_for(endpoint) }}"
+                   class="{{ 'selected' if request.endpoint == endpoint else '' }}"
+                   {% if request.endpoint == endpoint %}
+                       aria-current="page"
+                   {% endif %}>
+
+                    <span aria-hidden="true">{{ icon }}</span>
+                    {{ label }}
+
+                </a>
+
+                {% endfor %}
+
+            {% endif %}
 
         {% endif %}
 
@@ -87,6 +271,7 @@
     <div class="sidebar-bottom">
 
         <div class="sidebar-person">
+
             <span class="person-avatar">
                 {{ g.user.name[:1]|upper }}
             </span>
@@ -95,6 +280,7 @@
                 <strong>{{ g.user.name }}</strong>
                 <small>{{ g.user.role|title }} account</small>
             </div>
+
         </div>
 
         <form method="post"
@@ -110,6 +296,7 @@
                     formtarget="_self">
                 Log out →
             </button>
+
         </form>
 
     </div>
@@ -119,6 +306,7 @@
 <div class="campus-main">
 
     <header class="campus-topbar">
+
         <div>
             <strong>
                 {% block page_name %}Workspace{% endblock %}
@@ -128,6 +316,7 @@
         </div>
 
         <div class="topbar-account">
+
             <span class="account-role">
                 {{ g.user.role|title }}
             </span>
@@ -135,69 +324,59 @@
             <span class="person-avatar">
                 {{ g.user.name[:1]|upper }}
             </span>
+
         </div>
+
     </header>
 
 {% else %}
 
-<header class="topbar">
+<header class="topbar public-topbar">
 
-    <a class="brand"
-       href="{{ url_for('index') }}"
-       target="_self">
+    <a class="brand" href="{{ url_for('index') }}">
 
         <span class="brand-icon">SC</span>
 
-        <span>
+        <span class="public-brand-copy">
             Smart Campus
             <small>Student Task & Attendance</small>
         </span>
+
     </a>
-
-    {% if request.endpoint != 'index' %}
-    <nav aria-label="Account navigation">
-
-        <a href="{{ url_for('login') }}"
-           target="_self">
-            Login
-        </a>
-
-        <a class="btn btn-primary btn-small"
-           href="{{ url_for('register') }}"
-           target="_self">
-            Register
-        </a>
-
-    </nav>
-    {% endif %}
 
 </header>
 
 {% endif %}
 
-<main class="{{ 'campus-content' if g.user else 'container' }}">
+<main class="{{ 'campus-content' if show_workspace else 'container public-content' }}">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for kind, message in messages %}
-        <p class="flash {{ kind }}" role="status">
-            {{ message }}
-        </p>
-        {% endfor %}
+        {% if messages %}
+        <div class="campus-flash-list">
+
+            {% for kind, message in messages %}
+            <p class="flash {{ kind }}" role="status">
+                {{ message }}
+            </p>
+            {% endfor %}
+
+        </div>
+        {% endif %}
     {% endwith %}
 
     {% block content %}{% endblock %}
 
-    {% include 'shared/notices.html' %}
-
 </main>
 
-<footer class="{{ 'campus-footer' if g.user else '' }}">
+<footer class="{{ 'campus-footer' if show_workspace else 'public-footer' }}">
     Smart Campus · Developed by {{ developer_name }}
 </footer>
 
-{% if g.user %}
+{% if show_workspace %}
 </div>
 {% endif %}
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

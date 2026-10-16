@@ -1,114 +1,195 @@
 {% extends 'admin/base.html' %}
 
 {% block title %}Admin Profile{% endblock %}
+{% block page_name %}My Profile{% endblock %}
 
 {% block content %}
 
-<h1>My Profile</h1>
-<p class="muted">Update your name and password.</p>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/profile.css', v='3') }}">
 
-<div class="admin-forms admin-profile-grid">
+<div class="ap-page">
 
-    <form class="panel form-card"
-          method="post"
-          action="{{ url_for('admin_portal.profile') }}"
-          data-ajax-form
-          data-message="name-message">
+    <header class="ap-heading">
+        <span class="ap-eyebrow">ACCOUNT SETTINGS</span>
+        <h1>My Profile</h1>
+        <p>Manage your personal details and account security.</p>
+    </header>
 
-        <h2>Profile details</h2>
+    <section class="ap-identity">
 
-        <p id="name-message"
-           class="notice"
-           role="status"
-           aria-live="polite"
-           hidden></p>
+        <div class="ap-identity-person">
+            <span class="ap-avatar" aria-hidden="true">SC</span>
 
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
+            <div>
+                <span class="ap-eyebrow">SMART CAMPUS</span>
+                <h2>Administrator account</h2>
+                <p>{{ g.user.email }}</p>
+            </div>
+        </div>
 
-        <input type="hidden"
-               name="action"
-               value="name">
+        <span class="ap-role">
+            <span aria-hidden="true">●</span>
+            Admin workspace
+        </span>
 
-        <label>
-            Full name
+    </section>
 
-            <input name="name"
-                   value="{{ g.user.name }}"
-                   maxlength="100"
-                   required>
-        </label>
+    <div class="admin-forms admin-profile-grid ap-grid">
 
-        <label>
-            Email
+        <form class="panel form-card ap-card ap-details"
+              method="post"
+              action="{{ url_for('admin_portal.profile') }}"
+              data-ajax-form
+              data-message="name-message">
 
-            <input type="email"
-                   value="{{ g.user.email }}"
-                   readonly>
-        </label>
+            <div class="ap-card-heading">
+                <span class="ap-card-icon" aria-hidden="true">◎</span>
 
-        <button type="submit">Save profile</button>
+                <div>
+                    <h2>Profile details</h2>
+                    <p>Keep your account information up to date.</p>
+                </div>
+            </div>
 
-    </form>
+            <p id="name-message"
+               class="notice"
+               role="status"
+               aria-live="polite"
+               hidden></p>
 
-    <form class="panel form-card"
-          method="post"
-          action="{{ url_for('admin_portal.profile') }}"
-          data-ajax-form
-          data-message="password-message"
-          data-reset="password">
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
 
-        <h2>Change password</h2>
+            <input type="hidden"
+                   name="action"
+                   value="name">
 
-        <p id="password-message"
-           class="notice"
-           role="status"
-           aria-live="polite"
-           hidden></p>
+            <div class="ap-fields">
 
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
+                <label>
+                    Full name
 
-        <input type="hidden"
-               name="action"
-               value="password">
+                    <input name="name"
+                           value="{{ g.user.name }}"
+                           maxlength="100"
+                           autocomplete="name"
+                           placeholder="Enter your full name"
+                           required>
+                </label>
 
-        <label>
-            Current password
+                <label>
+                    Email address
 
-            <input type="password"
-                   name="current_password"
-                   autocomplete="current-password"
-                   required>
-        </label>
+                    <input type="email"
+                           value="{{ g.user.email }}"
+                           autocomplete="email"
+                           readonly>
 
-        <label>
-            New password
+                    <small>Your email address is read-only.</small>
+                </label>
 
-            <input type="password"
-                   name="new_password"
-                   minlength="8"
-                   maxlength="128"
-                   autocomplete="new-password"
-                   required>
-        </label>
+            </div>
 
-        <label>
-            Confirm new password
+            <div class="ap-card-footer">
+                <span>Personal information</span>
 
-            <input type="password"
-                   name="confirm_password"
-                   minlength="8"
-                   maxlength="128"
-                   autocomplete="new-password"
-                   required>
-        </label>
+                <button type="submit">
+                    Save profile →
+                </button>
+            </div>
 
-        <button type="submit">Change password</button>
+        </form>
 
-    </form>
+        <form class="panel form-card ap-card ap-security"
+              method="post"
+              action="{{ url_for('admin_portal.profile') }}"
+              data-ajax-form
+              data-message="password-message"
+              data-reset="password">
+
+            <div class="ap-card-heading">
+                <span class="ap-card-icon" aria-hidden="true">⚿</span>
+
+                <div>
+                    <h2>Change password</h2>
+                    <p>Protect your account with a strong password.</p>
+                </div>
+            </div>
+
+            <p id="password-message"
+               class="notice"
+               role="status"
+               aria-live="polite"
+               hidden></p>
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden"
+                   name="action"
+                   value="password">
+
+            <div class="ap-fields">
+
+                <label>
+                    Current password
+
+                    <input type="password"
+                           name="current_password"
+                           autocomplete="current-password"
+                           placeholder="Enter current password"
+                           required>
+                </label>
+
+                <div class="ap-password-grid">
+
+                    <label>
+                        New password
+
+                        <input type="password"
+                               name="new_password"
+                               minlength="8"
+                               maxlength="128"
+                               autocomplete="new-password"
+                               placeholder="At least 8 characters"
+                               required>
+                    </label>
+
+                    <label>
+                        Confirm new password
+
+                        <input type="password"
+                               name="confirm_password"
+                               minlength="8"
+                               maxlength="128"
+                               autocomplete="new-password"
+                               placeholder="Re-enter new password"
+                               required>
+                    </label>
+
+                </div>
+
+                <p class="ap-security-note">
+                    Use a unique password that you do not use
+                    for other accounts.
+                </p>
+
+            </div>
+
+            <div class="ap-card-footer">
+                <span>Account security</span>
+
+                <button type="submit">
+                    Change password →
+                </button>
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
 

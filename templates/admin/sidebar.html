@@ -1,38 +1,48 @@
-<aside class="admin-sidebar">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/sidebar.css', v='9') }}">
 
-    <a class="brand"
+<aside class="admin-sidebar asc-sidebar">
+
+    <a class="brand asc-brand"
        href="{{ url_for('admin_portal.dashboard') }}">
 
-        <span class="brand-icon">SC</span>
+        <span class="brand-icon asc-logo">SC</span>
 
-        <span>
-            Smart Campus
+        <span class="asc-brand-copy">
+            <strong>Smart Campus</strong>
             <small>Administration</small>
         </span>
 
     </a>
 
-    <p class="menu-label">MANAGEMENT</p>
+    <p class="menu-label asc-caption">MANAGEMENT</p>
 
-    <nav aria-label="Admin navigation">
+    <nav class="asc-nav" aria-label="Admin navigation">
 
-                {% for endpoint, label, icon in [
+        {% for endpoint, label, icon in [
             ('admin_portal.dashboard', 'Dashboard', '▦'),
             ('admin_portal.teacher_details', 'Teacher Details', '◷'),
             ('admin_portal.student_details', 'Student Details', '♙'),
             ('admin_portal.class_tasks', 'Task', '✓'),
             ('admin_portal.notices', 'Notices', '▤'),
             ('admin_portal.profile', 'Profile', '◎')
-            ] %}
+        ] %}
+
+        {% set selected = request.endpoint == endpoint %}
 
         <a href="{{ url_for(endpoint) }}"
-           class="{{ 'active' if request.endpoint == endpoint else '' }}"
-           {% if request.endpoint == endpoint %}
-               aria-current="page"
-           {% endif %}>
+           class="asc-link {{ 'active' if selected else '' }}"
+           {% if selected %}aria-current="page"{% endif %}>
 
-            <span aria-hidden="true">{{ icon }}</span>
-            {{ label }}
+            <span class="asc-icon" aria-hidden="true">
+                {{ icon }}
+            </span>
+
+            <span class="asc-label">{{ label }}</span>
+
+            {% if selected %}
+            <span class="asc-dot" aria-hidden="true"></span>
+            {% endif %}
 
         </a>
 
@@ -40,19 +50,38 @@
 
     </nav>
 
-    <form class="logout"
-      method="post"
-      action="{{ url_for('logout') }}"
-      target="_self">
+    <div class="asc-bottom">
 
-    <input type="hidden"
-           name="csrf_token"
-           value="{{ csrf_token() }}">
+        <div class="asc-account">
 
-    <button type="submit" formtarget="_self">
-        ↪ Logout
-    </button>
+            <span class="asc-avatar" aria-hidden="true">
+                {{ g.user.name[:1]|upper }}
+            </span>
 
-</form>
+            <div>
+                <strong>{{ g.user.name }}</strong>
+                <small>Administrator</small>
+            </div>
+
+        </div>
+
+        <form class="logout asc-logout"
+              method="post"
+              action="{{ url_for('logout') }}"
+              target="_self">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <button type="submit" formtarget="_self">
+                <span aria-hidden="true">↪</span>
+                Logout
+                <span class="asc-logout-arrow" aria-hidden="true">→</span>
+            </button>
+
+        </form>
+
+    </div>
 
 </aside>

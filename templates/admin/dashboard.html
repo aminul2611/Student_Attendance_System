@@ -1,216 +1,282 @@
 {% extends 'admin/base.html' %}
 
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_name %}Dashboard{% endblock %}
+
 {% block content %}
 
-<section class="page-heading">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='admin/dashboard.css', v='9') }}">
 
-    <div>
-        <p class="eyebrow">CAMPUS OVERVIEW</p>
+<div class="ad-page">
 
-        <h1>Welcome, {{ g.user.name }}!</h1>
-
-        <p class="muted">
-            Daily and monthly attendance overview.
-        </p>
-    </div>
-
-    <a class="button"
-       href="{{ url_for(
-           'admin_portal.attendance_summary',
-           mode=mode,
-           date=selected_date,
-           month=selected_month,
-           teacher_id=teacher_id,
-           class_id=class_id
-       ) }}">
-        Download CSV
-    </a>
-
-</section>
-
-
-<!-- 1. Student and Teacher attendance graphs -->
-{% include 'admin/graphs.html' %}
-
-
-<!-- 2. All six summary cards -->
-<section class="summary-grid" aria-label="Summary">
-
-    {% for label,value,caption in cards %}
-
-    <article class="summary-card">
-
-        <span class="summary-icon">
-            {{ loop.index }}
-        </span>
-
+    <!-- Welcome -->
+    <section class="page-heading ad-welcome">
         <div>
-            <small>{{ label }}</small>
+            <p class="eyebrow">CAMPUS OVERVIEW</p>
 
-            <strong>{{ value }}</strong>
+            <h1>Welcome, {{ g.user.name }}!</h1>
 
-            <p>{{ caption }}</p>
+            <p class="muted">
+                Daily and monthly campus attendance overview.
+            </p>
+
+            <span class="ad-period">
+                {{ period }} · {{ campus_timezone }}
+            </span>
         </div>
 
-    </article>
+        <a class="button ad-export"
+           href="{{ url_for(
+               'admin_portal.attendance_summary',
+               mode=mode,
+               date=selected_date,
+               month=selected_month,
+               teacher_id=teacher_id,
+               class_id=class_id
+           ) }}">
+            <span aria-hidden="true">↓</span>
+            Download CSV
+        </a>
+    </section>
 
-    {% endfor %}
+    <!-- Graphs first -->
+    {% include 'admin/graphs.html' %}
 
-</section>
+    <!-- Compact summary cards -->
+    <section class="summary-grid"
+             aria-label="Campus summary">
 
+        {% set icons = ['♙', '◷', '▤', '✓', '↗', '◎'] %}
 
-<!-- 3. Report filters -->
-<form id="report-filters"
-      class="panel filters"
-      method="get">
+        {% for label, value, caption in cards %}
+        <article class="summary-card">
 
-    <label>
-        View
+            <span class="summary-icon"
+                  aria-hidden="true">
+                {{ icons[loop.index0 % 6] }}
+            </span>
 
-        <select name="mode" id="report-mode">
+            <div>
+                <small>{{ label }}</small>
+                <strong>{{ value }}</strong>
+                <p>{{ caption }}</p>
+            </div>
 
-            <option value="daily"
-                    {% if mode == 'daily' %}selected{% endif %}>
-                Daily
-            </option>
+        </article>
+        {% endfor %}
 
-            <option value="monthly"
-                    {% if mode == 'monthly' %}selected{% endif %}>
-                Monthly
-            </option>
+    </section>
 
-        </select>
-    </label>
+    <!-- Report filters -->
+    <section class="panel ad-filter-panel">
 
-    <label id="date-field"
-           {% if mode != 'daily' %}hidden{% endif %}>
+        <div class="ad-section-heading">
+            <div>
+                <span class="ad-eyebrow">REPORT SETTINGS</span>
+                <h2>Attendance filters</h2>
+            </div>
 
-        Date
+            <span class="ad-tag">
+                {{ mode|title }} report
+            </span>
+        </div>
 
-        <input type="date"
-               name="date"
-               value="{{ selected_date }}"
-               max="{{ max_date }}"
-               required>
-    </label>
+        <form id="report-filters"
+              class="filters"
+              method="get">
 
-    <label id="month-field"
-           {% if mode != 'monthly' %}hidden{% endif %}>
+            <label>
+                View
 
-        Month
+                <select name="mode" id="report-mode">
+                    <option value="daily"
+                            {% if mode == 'daily' %}selected{% endif %}>
+                        Daily
+                    </option>
 
-        <input type="month"
-               name="month"
-               value="{{ selected_month }}"
-               max="{{ max_month }}"
-               required>
-    </label>
+                    <option value="monthly"
+                            {% if mode == 'monthly' %}selected{% endif %}>
+                        Monthly
+                    </option>
+                </select>
+            </label>
 
-    <label>
-        Teacher
+            <label id="date-field"
+                   {% if mode != 'daily' %}hidden{% endif %}>
+                Date
 
-        <select name="teacher_id" id="teacher-filter">
+                <input type="date"
+                       name="date"
+                       value="{{ selected_date }}"
+                       max="{{ max_date }}"
+                       {% if mode == 'daily' %}
+                           required
+                       {% else %}
+                           disabled
+                       {% endif %}>
+            </label>
 
-            <option value="">All teachers</option>
+            <label id="month-field"
+                   {% if mode != 'monthly' %}hidden{% endif %}>
+                Month
 
-            {% for t in teachers %}
+                <input type="month"
+                       name="month"
+                       value="{{ selected_month }}"
+                       max="{{ max_month }}"
+                       {% if mode == 'monthly' %}
+                           required
+                       {% else %}
+                           disabled
+                       {% endif %}>
+            </label>
 
-            <option value="{{ t.id }}"
-                    {% if teacher_id == t.id|string %}selected{% endif %}>
-                {{ t.name }}
-            </option>
+            <label>
+                Teacher
 
-            {% endfor %}
+                <select name="teacher_id" id="teacher-filter">
+                    <option value="">All teachers</option>
 
-        </select>
-    </label>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}"
+                            {% if teacher_id|string == teacher.id|string %}
+                                selected
+                            {% endif %}>
+                        {{ teacher.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
 
-    <label>
-        Class
+            <label>
+                Class
 
-        <select name="class_id" id="class-filter">
+                <select name="class_id" id="class-filter">
+                    <option value="">All assigned classes</option>
 
-            <option value="">All assigned classes</option>
+                    {% for classroom in classes %}
+                    <option value="{{ classroom.id }}"
+                            {% if class_id|string == classroom.id|string %}
+                                selected
+                            {% endif %}>
+                        {{ classroom.code }} · {{ classroom.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
 
-            {% for c in classes %}
+            <button type="submit">
+                Apply filters →
+            </button>
 
-            <option value="{{ c.id }}"
-                    {% if class_id == c.id|string %}selected{% endif %}>
-                {{ c.code }} · {{ c.name }}
-            </option>
+        </form>
 
-            {% endfor %}
+    </section>
 
-        </select>
-    </label>
+    <!-- Scheduled sessions -->
+    <section class="panel ad-sessions">
 
-    <button type="submit">Apply filters</button>
+        <div class="ad-section-heading">
+            <div>
+                <span class="ad-eyebrow">CLASS ACTIVITY</span>
+                <h2>Scheduled sessions</h2>
 
-</form>
+                <p class="muted">
+                    Up to 10 latest sessions in the selected period.
+                </p>
+            </div>
 
-<p class="period">
-    Report period: {{ period }} · {{ campus_timezone }}
-</p>
+            <span class="ad-tag">
+                {{ sessions|length }} sessions
+            </span>
+        </div>
 
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Class / Subject</th>
+                        <th scope="col">Teacher</th>
+                        <th scope="col">Room</th>
+                    </tr>
+                </thead>
 
-<section class="panel">
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td>{{ session.lesson_date }}</td>
 
-    <h2>Class sessions in selected period</h2>
+                        <td>
+                            <span class="ad-time">
+                                {{ session.start_time }}–{{ session.end_time }}
+                            </span>
+                        </td>
 
-    <p class="muted">
-        Up to 10 latest scheduled sessions.
-    </p>
+                        <td>
+                            <strong>{{ session.code }}</strong>
+                            <small class="ad-class-name">
+                                {{ session.name }}
+                            </small>
+                        </td>
 
-    <div class="table-wrap">
+                        <td>{{ session.teacher_name }}</td>
+                        <td>{{ session.room or '—' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="ad-empty">
+                                <span aria-hidden="true">▤</span>
+                                <strong>No scheduled sessions</strong>
+                                <p>
+                                    Try another report period or filter.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-        <table>
+    </section>
 
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Class</th>
-                    <th>Teacher</th>
-                    <th>Room</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for s in sessions %}
-
-                <tr>
-                    <td>{{ s.lesson_date }}</td>
-
-                    <td>{{ s.start_time }}–{{ s.end_time }}</td>
-
-                    <td>{{ s.code }} · {{ s.name }}</td>
-
-                    <td>{{ s.teacher_name }}</td>
-
-                    <td>{{ s.room or '—' }}</td>
-                </tr>
-
-                {% else %}
-
-                <tr>
-                    <td colspan="5">
-                        No scheduled sessions in this period.
-                    </td>
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</section>
+</div>
 
 <script id="attendance-graph-data" type="application/json">
     {{ graphs|tojson }}
+</script>
+
+<script>
+(() => {
+    const mode = document.getElementById("report-mode");
+    const dateField = document.getElementById("date-field");
+    const monthField = document.getElementById("month-field");
+
+    if (!mode || !dateField || !monthField) return;
+
+    function updatePeriodFields() {
+        const monthly = mode.value === "monthly";
+
+        dateField.hidden = monthly;
+        monthField.hidden = !monthly;
+
+        const dateInput = dateField.querySelector("input");
+        const monthInput = monthField.querySelector("input");
+
+        dateInput.disabled = monthly;
+        dateInput.required = !monthly;
+
+        monthInput.disabled = !monthly;
+        monthInput.required = monthly;
+    }
+
+    mode.addEventListener("change", updatePeriodFields);
+    updatePeriodFields();
+})();
 </script>
 
 {% endblock %}

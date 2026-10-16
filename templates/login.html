@@ -6,124 +6,232 @@
 
 {% block content %}
 
-{% set descriptions = {
-    'admin': 'Keep your campus organized. Manage accounts, classes and activity from your workspace.',
-    'teacher': 'A focused space for your classes, coursework and student progress.',
-    'student': 'Your classes, assignments and progress, all together.'
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='login.css', v='1') }}">
+
+{% set role_info = {
+    'admin': {
+        'symbol': '▦',
+        'heading': 'Your campus.\nYour control.',
+        'description': 'Bring people, classes and campus activity together in one organized workspace.',
+        'features': [
+            'Manage teacher and student accounts',
+            'Organize classes and weekly schedules',
+            'Track attendance and campus reports'
+        ]
+    },
+    'teacher': {
+        'symbol': '▤',
+        'heading': 'Teach better.\nStay connected.',
+        'description': 'Everything you need for your classes, students and daily teaching.',
+        'features': [
+            'View your assigned classes',
+            'Manage attendance and student marks',
+            'Share notices with your campus'
+        ]
+    },
+    'student': {
+        'symbol': '✦',
+        'heading': 'Your classes.\nYour next step.',
+        'description': 'Stay connected with your learning, class updates and academic progress.',
+        'features': [
+            'Explore your enrolled classes',
+            'Check attendance and results',
+            'Read your latest campus notices'
+        ]
+    }
 } %}
 
-<div class="portal-login">
+{% set info = role_info[selected_role] %}
 
-    <section class="login-intro role-{{ selected_role }}">
+<div class="auth-page auth-{{ selected_role }}">
 
-        <a class="login-back" href="{{ url_for('index') }}">
-            ← Choose another role
+    <div class="auth-topline">
+        <a class="auth-back" href="{{ url_for('index') }}">
+            <span aria-hidden="true">←</span>
+            Back to campus
         </a>
 
-        <div>
-            <span class="login-role-badge">
-                {{ selected_role|title }} workspace
-            </span>
-
-            <h1>
-                Welcome<br>
-                back<span>.</span>
-            </h1>
-
-            <p>{{ descriptions[selected_role] }}</p>
-        </div>
-
-        <span class="login-intro-note">
-            Smart Campus · Your campus, connected.
+        <span class="auth-top-caption">
+            SMART CAMPUS PORTAL
         </span>
-    </section>
+    </div>
 
-    <section class="login-form-panel">
+    <div class="auth-shell">
 
-        <span class="eyebrow">
-            {{ selected_role|upper }} ACCESS
-        </span>
+        <section class="auth-story"
+                 aria-labelledby="auth-story-title">
 
-        <h2>Sign in to your account</h2>
+            <div class="auth-story-brand">
+                <span class="auth-logo" aria-hidden="true">SC</span>
 
-        <p class="muted">
-            Use your {{ selected_role }} account to continue.
-        </p>
+                <div>
+                    <strong>Smart Campus</strong>
+                    <small>Your campus, connected.</small>
+                </div>
+            </div>
 
-        <form method="post" class="stack">
+            <div class="auth-story-content">
 
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="{{ csrf_token() }}"
-            >
+                <span class="auth-workspace">
+                    <span aria-hidden="true">{{ info.symbol }}</span>
+                    {{ selected_role|title }} workspace
+                </span>
 
-            <input
-                type="hidden"
-                name="next"
-                value="{{ request.args.get('next', '') }}"
-            >
+                <h1 id="auth-story-title">{{ info.heading }}</h1>
 
-            <label>
-                Email address
+                <p class="auth-story-description">
+                    {{ info.description }}
+                </p>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    autocomplete="username"
-                    required
-                >
-            </label>
+                <ul class="auth-features">
+                    {% for feature in info.features %}
+                    <li>
+                        <span aria-hidden="true">✓</span>
+                        {{ feature }}
+                    </li>
+                    {% endfor %}
+                </ul>
 
-            <label>
-                Password
+            </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter your password"
-                    autocomplete="current-password"
-                    required
-                >
-            </label>
+            <div class="auth-story-footer">
+                <span class="auth-footer-dot" aria-hidden="true"></span>
+                One campus. Everything connected.
+            </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary btn-full"
-            >
-                Sign in as {{ selected_role|title }} →
-            </button>
-        </form>
+        </section>
 
-        {% if selected_role == 'student' %}
-            <p class="auth-bottom">
-                New student?
+        <section class="auth-form-panel"
+                 aria-labelledby="auth-signin-title">
 
-                <a href="{{ url_for('register') }}">
-                    Create an account
-                </a>
-            </p>
-        {% endif %}
+            <div class="auth-form-heading">
+                <span class="auth-section-label">
+                    WELCOME BACK
+                </span>
 
-        <nav class="login-role-switch" aria-label="Choose login role">
-            {% for role in ['admin', 'teacher', 'student'] %}
-                <a
-                    class="{{ 'is-current' if role == selected_role else '' }}"
-                    href="{{ url_for(
-                        'login',
-                        role=role,
-                        next=request.args.get('next', '')
-                    ) }}"
-                    {% if role == selected_role %}
-                        aria-current="page"
-                    {% endif %}
-                >
+                <h2 id="auth-signin-title">Sign in</h2>
+
+                <p>
+                    Continue to your
+                    <strong>{{ selected_role }}</strong>
+                    workspace.
+                </p>
+            </div>
+
+            <nav class="auth-role-tabs"
+                 aria-label="Select account role">
+
+                {% for role in ['admin', 'teacher', 'student'] %}
+                <a href="{{ url_for('login', role=role) }}"
+                   class="{{ 'is-active' if role == selected_role else '' }}"
+                   {% if role == selected_role %}
+                       aria-current="page"
+                   {% endif %}>
                     {{ role|title }}
                 </a>
-            {% endfor %}
-        </nav>
+                {% endfor %}
 
-    </section>
+            </nav>
+
+            <form class="auth-form"
+                  method="post"
+                  action="{{ url_for('login', role=selected_role) }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <input type="hidden"
+                       name="next"
+                       value="{{ request.form.get('next') or request.args.get('next', '') }}">
+
+                <label class="auth-field" for="auth-email">
+                    Email address
+
+                    <input id="auth-email"
+                           type="email"
+                           name="email"
+                           value="{{ request.form.get('email', '') }}"
+                           placeholder="you@example.com"
+                           autocomplete="username"
+                           required>
+                </label>
+
+                <div class="auth-field">
+                    <label for="auth-password">Password</label>
+
+                    <div class="auth-password-wrap">
+                        <input id="auth-password"
+                               type="password"
+                               name="password"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required>
+
+                        <button id="auth-toggle-password"
+                                class="auth-password-toggle"
+                                type="button"
+                                aria-controls="auth-password"
+                                aria-label="Show password"
+                                aria-pressed="false">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <p class="auth-form-help">
+                    Use the credentials for your
+                    {{ selected_role }} account.
+                </p>
+
+                <button class="auth-submit" type="submit">
+                    <span>
+                        Sign in as {{ selected_role|title }}
+                    </span>
+
+                    <span class="auth-submit-arrow"
+                          aria-hidden="true">→</span>
+                </button>
+
+            </form>
+
+            <div class="auth-form-footer">
+                <span aria-hidden="true">◎</span>
+                Your campus workspace starts here.
+            </div>
+
+        </section>
+
+    </div>
+
+    <p class="auth-bottom-note">
+        Classes, people and progress — together.
+    </p>
+
 </div>
+
+<script>
+(() => {
+    const password = document.getElementById("auth-password");
+    const toggle = document.getElementById("auth-toggle-password");
+
+    if (!password || !toggle) return;
+
+    toggle.addEventListener("click", () => {
+        const visible = password.type === "password";
+
+        password.type = visible ? "text" : "password";
+        toggle.textContent = visible ? "Hide" : "Show";
+
+        toggle.setAttribute(
+            "aria-label",
+            visible ? "Hide password" : "Show password"
+        );
+
+        toggle.setAttribute("aria-pressed", String(visible));
+    });
+})();
+</script>
+
 {% endblock %}

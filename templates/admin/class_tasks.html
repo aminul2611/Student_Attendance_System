@@ -6,53 +6,43 @@
 {% block content %}
 
 <link rel="stylesheet"
-      href="{{ url_for('static', filename='admin/student-management.css') }}">
+      href="{{ url_for('static', filename='admin/class-tasks.css', v='1') }}">
 
-<style>
-.weekly-row {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr auto;
-    gap: 14px;
-    align-items: end;
-    margin-bottom: 16px;
-}
+<div class="ct-page">
 
-.weekly-times {
-    white-space: pre-line;
-    min-width: 240px;
-    line-height: 1.8;
-}
+    <header class="ct-heading">
+        <div>
+            <span class="ct-eyebrow">CAMPUS MANAGEMENT</span>
+            <h1>Class Setup</h1>
+            <p>Organize subjects, assign teachers and build weekly routines.</p>
+        </div>
 
-@media (max-width: 700px) {
-    .weekly-row {
-        grid-template-columns: 1fr;
-        padding: 16px;
-        border: 1px solid #e7ecf4;
-        border-radius: 12px;
-    }
-}
-</style>
+        <span class="ct-total">
+            <strong>{{ class_setups|length }}</strong>
+            Saved classes
+        </span>
+    </header>
 
-<div class="sd-page">
+    <form class="ct-setup"
+          method="post"
+          action="{{ url_for('admin_portal.create_student_class_setup') }}">
 
-    <div class="sd-heading">
-        <h1>Task</h1>
-        <p class="sd-muted">
-            Manage classes, teachers and weekly schedules.
-        </p>
-    </div>
+        <input type="hidden"
+               name="csrf_token"
+               value="{{ csrf_token() }}">
 
-    <section class="sd-card">
-        <h2>Class Setup</h2>
+        <section class="ct-panel">
 
-        <form method="post"
-              action="{{ url_for('admin_portal.create_student_class_setup') }}">
+            <div class="ct-panel-heading">
+                <span class="ct-step" aria-hidden="true">01</span>
 
-            <input type="hidden"
-                   name="csrf_token"
-                   value="{{ csrf_token() }}">
+                <div>
+                    <h2>Class information</h2>
+                    <p>Set the subject, semester and assigned teacher.</p>
+                </div>
+            </div>
 
-            <div class="sd-grid">
+            <div class="ct-fields">
 
                 <label>
                     Class / Unique code
@@ -74,12 +64,12 @@
                     Subject name
                     <input name="subject_name"
                            maxlength="150"
-                           placeholder="Software Engineering"
+                           placeholder="Example: Software Engineering"
                            required>
                 </label>
 
                 <label>
-                    Teacher
+                    Assigned teacher
                     <select name="teacher_id" required>
                         <option value="">Select teacher</option>
 
@@ -93,105 +83,168 @@
 
             </div>
 
-            <h2>Weekly class time</h2>
+        </section>
 
-            <p class="sd-muted">
-                These day and time slots repeat every week.
-            </p>
+        <section class="ct-panel ct-routine-panel">
+
+            <div class="ct-panel-heading">
+                <span class="ct-step" aria-hidden="true">02</span>
+
+                <div>
+                    <h2>Weekly routine</h2>
+                    <p>Add the days and times when this class meets each week.</p>
+                </div>
+            </div>
 
             <div id="weekly-slots"></div>
 
-            <button class="sd-btn secondary"
-                    id="add-slot"
-                    type="button">
-                ＋ Add day/time
-            </button>
-
-            <div style="margin-top:24px;">
-                <button class="sd-btn"
-                        type="submit"
-                        {% if not teachers %}disabled{% endif %}>
-                    Save class
+            <div class="ct-routine-footer">
+                <button class="ct-button ct-secondary"
+                        id="add-slot"
+                        type="button">
+                    ＋ Add another day
                 </button>
+
+                <span id="slot-count"
+                      role="status"
+                      aria-live="polite"></span>
             </div>
 
-            {% if not teachers %}
-            <p class="sd-muted">
-                Add or activate a teacher first.
+        </section>
+
+        <div class="ct-save-bar">
+            <p>
+                {% if teachers %}
+                    The weekly routine repeats on the selected days.
+                {% else %}
+                    Add or activate a teacher before saving a class.
+                {% endif %}
             </p>
-            {% endif %}
 
-        </form>
-    </section>
+            <button class="ct-button ct-primary"
+                    type="submit"
+                    {% if not teachers %}disabled{% endif %}>
+                Save class →
+            </button>
+        </div>
 
-    <section class="sd-card">
-        <h2>Saved classes ({{ class_setups|length }})</h2>
+    </form>
 
-        <p class="sd-muted">
-            Remove course stops new student assignments.
+    <section class="ct-saved-section"
+             aria-labelledby="ct-saved-title">
+
+        <div class="ct-saved-heading">
+            <div>
+                <span class="ct-eyebrow">YOUR COURSE DIRECTORY</span>
+                <h2 id="ct-saved-title">
+                    Saved classes
+                    <span class="ct-count">{{ class_setups|length }}</span>
+                </h2>
+                <p>Class information and weekly schedules at a glance.</p>
+            </div>
+
+            <label class="ct-search">
+                Search classes
+                <input id="ct-class-search"
+                       type="search"
+                       placeholder="Code, subject, semester or teacher"
+                       autocomplete="off">
+            </label>
+        </div>
+
+        <div class="ct-class-grid">
+
+            {% for classroom in class_setups %}
+
+            <article class="ct-class-card"
+                     data-class-card
+                     data-class-search="{{ classroom.code }} {{ classroom.name }} {{ classroom.semester or '' }} {{ classroom.teacher_name }}">
+
+                <div class="ct-card-top">
+                    <span class="ct-code">{{ classroom.code }}</span>
+                    <span class="ct-card-icon" aria-hidden="true">▤</span>
+                </div>
+
+                <h3>{{ classroom.name }}</h3>
+
+                <span class="ct-semester">
+                    {{ classroom.semester or 'Semester not set' }}
+                </span>
+
+                <div class="ct-teacher">
+                    <span class="ct-avatar" aria-hidden="true">
+                        {{ classroom.teacher_name[:1]|upper }}
+                    </span>
+
+                    <div>
+                        <small>Assigned teacher</small>
+
+                        {% if classroom.teacher_removed %}
+                        <strong>Assignment removed</strong>
+                        <small>Previous: {{ classroom.teacher_name }}</small>
+                        {% else %}
+                        <strong>{{ classroom.teacher_name }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ct-weekly-list">
+                    <h4>Weekly schedule</h4>
+
+                    {% if classroom.class_time %}
+                        {% for slot in classroom.class_time.split('|') %}
+                        <div class="ct-time-slot">
+                            <span aria-hidden="true">◷</span>
+                            <span>{{ slot.strip() }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Time not set.</p>
+                    {% endif %}
+                </div>
+
+                <div class="ct-card-footer">
+
+                    <span class="ct-student-count">
+                        <strong>{{ classroom.student_count }}</strong>
+                        students
+                    </span>
+
+                    <form method="post"
+                          data-remove-course
+                          action="{{ url_for('admin_portal.remove_class_setup', class_id=classroom.id) }}">
+
+                        <input type="hidden"
+                               name="csrf_token"
+                               value="{{ csrf_token() }}">
+
+                        <button class="ct-remove" type="submit">
+                            Remove course
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="ct-empty"
+             id="ct-class-empty"
+             {% if class_setups %}hidden{% endif %}>
+            <span aria-hidden="true">▤</span>
+            <h3>No matching classes</h3>
+            <p>Add a class above or try a different search.</p>
+        </div>
+
+        <p class="ct-directory-note">
+            Removing a course stops new student assignments.
             Existing assignments and results remain.
         </p>
 
-        <div class="sd-table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Semester</th>
-                        <th>Subject</th>
-                        <th>Weekly time</th>
-                        <th>Teacher</th>
-                        <th>Students</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for classroom in class_setups %}
-                    <tr>
-                        <td><strong>{{ classroom.code }}</strong></td>
-                        <td>{{ classroom.semester or '—' }}</td>
-                        <td>{{ classroom.name }}</td>
-
-                        <td class="weekly-times">{{ (classroom.class_time or 'Time not set')|replace(' | ', '\n') }}</td>
-
-                        <td>
-                            {% if classroom.teacher_removed %}
-                                Assignment removed
-                                <small>
-                                    Previous: {{ classroom.teacher_name }}
-                                </small>
-                            {% else %}
-                                {{ classroom.teacher_name }}
-                            {% endif %}
-                        </td>
-
-                        <td>{{ classroom.student_count }}</td>
-
-                        <td>
-                            <form method="post"
-                                  class="sd-remove-form"
-                                  action="{{ url_for('admin_portal.remove_class_setup', class_id=classroom.id) }}">
-
-                                <input type="hidden"
-                                       name="csrf_token"
-                                       value="{{ csrf_token() }}">
-
-                                <button class="sd-btn danger"
-                                        type="submit">
-                                    Remove course
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7">No courses added yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
     </section>
 
 </div>
@@ -223,7 +276,7 @@
             <input type="time" name="end_time" required>
         </label>
 
-        <button class="sd-btn danger remove-slot"
+        <button class="ct-remove remove-slot"
                 type="button"
                 aria-label="Remove this time slot">
             Remove time
@@ -237,6 +290,7 @@
     const container = document.getElementById("weekly-slots");
     const template = document.getElementById("weekly-slot-template");
     const addButton = document.getElementById("add-slot");
+    const count = document.getElementById("slot-count");
 
     function updateButtons() {
         const rows = container.querySelectorAll(".weekly-row");
@@ -247,9 +301,15 @@
         });
 
         addButton.disabled = rows.length >= 21;
+        count.textContent =
+            `${rows.length} of 21 weekly time slots`;
     }
 
     function addSlot() {
+        if (container.querySelectorAll(".weekly-row").length >= 21) {
+            return;
+        }
+
         container.appendChild(template.content.cloneNode(true));
         updateButtons();
     }
@@ -266,6 +326,43 @@
     });
 
     addSlot();
+
+    const search = document.getElementById("ct-class-search");
+    const empty = document.getElementById("ct-class-empty");
+    const cards = Array.from(
+        document.querySelectorAll("[data-class-card]")
+    );
+
+    function filterClasses() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+
+        cards.forEach(card => {
+            const matches = (card.dataset.classSearch || "")
+                .toLocaleLowerCase()
+                .includes(query);
+
+            card.hidden = !matches;
+            if (matches) visible++;
+        });
+
+        empty.hidden = visible > 0;
+    }
+
+    search.addEventListener("input", filterClasses);
+
+    document.querySelectorAll("[data-remove-course]").forEach(form => {
+        form.addEventListener("submit", event => {
+            if (!window.confirm(
+                "Remove this course from new assignments? " +
+                "Existing assignments and results will remain."
+            )) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    filterClasses();
 })();
 </script>
 

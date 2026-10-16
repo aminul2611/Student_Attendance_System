@@ -32,7 +32,6 @@ def init_student_tables(connect):
                 CREATE TABLE IF NOT EXISTS student_profiles (
                     user_id INTEGER PRIMARY KEY
                         REFERENCES users(id) ON DELETE CASCADE,
-
                     phone TEXT NOT NULL DEFAULT '',
                     department TEXT NOT NULL DEFAULT ''
                 );
@@ -100,9 +99,9 @@ def find_student(db, student_id):
             COALESCE(p.department, '') AS department
         FROM users u
         LEFT JOIN student_profiles p
-            ON p.user_id = u.id
-        WHERE u.id = ?
-          AND u.role = 'student'
+            ON p.user_id=u.id
+        WHERE u.id=?
+          AND u.role='student'
         """,
         (student_id,),
     ).fetchone()
@@ -172,32 +171,150 @@ def new_password():
     return generate_password_hash(password)
 
 
-# STUDENT LIST
+# STUDENT LIST WITH CLASS / SEMESTER FILTERS
 
 @bp.get("/student-details")
 @require("admin")
 def student_details():
+    selected_semester = request.args.get(
+        "semester", ""
+    ).strip()
+
+    class_text = request.args.get(
+        "class_id", ""
+    ).strip()
+
+    selected_class_id = None
+
+    if class_text:
+        try:
+            selected_class_id = int(class_text)
+        except ValueError:
+            abort(400)
+
+        if selected_class_id <= 0:
+            abort(400)
+
+    # Prefer the semester saved with the student's assignment.
+    semester_sql = """
+        COALESCE(
+            NULLIF(TRIM(t.semester), ''),
+            NULLIF(TRIM(c.semester), ''),
+            'Semester not assigned'
+        )
+    """
+
     with database() as db:
-        students = db.execute(
+        # Historical classes remain available for reviewing assignments.
+        classes = db.execute(
             """
+            SELECT id, code, name, semester
+            FROM teacher_classes
+            ORDER BY semester, code, id
+            """
+        ).fetchall()
+
+        selected_class = None
+
+        if selected_class_id is not None:
+            selected_class = next(
+                (
+                    row for row in classes
+                    if row["id"] == selected_class_id
+                ),
+                None,
+            )
+
+            if selected_class is None:
+                abort(404)
+
+        semesters = [
+            row["semester"]
+            for row in db.execute(
+                f"""
+                SELECT DISTINCT
+                    {semester_sql} AS semester
+                FROM teacher_enrolments e
+                JOIN teacher_classes c
+                    ON c.id=e.class_id
+                LEFT JOIN student_enrolment_terms t
+                    ON t.class_id=e.class_id
+                    AND t.student_id=e.student_id
+                ORDER BY semester
+                """
+            ).fetchall()
+        ]
+
+        conditions = ["e.student_id=u.id"]
+        parameters = []
+
+        if selected_class_id is not None:
+            conditions.append("e.class_id=?")
+            parameters.append(selected_class_id)
+
+        if selected_semester:
+            conditions.append(f"{semester_sql}=?")
+            parameters.append(selected_semester)
+
+        assignment_filter = ""
+
+        if selected_class_id is not None or selected_semester:
+            assignment_filter = f"""
+                AND EXISTS (
+                    SELECT 1
+                    FROM teacher_enrolments e
+                    JOIN teacher_classes c
+                        ON c.id=e.class_id
+                    LEFT JOIN student_enrolment_terms t
+                        ON t.class_id=e.class_id
+                        AND t.student_id=e.student_id
+                    WHERE {" AND ".join(conditions)}
+                )
+            """
+
+        students = db.execute(
+            f"""
             SELECT
                 u.id,
                 u.name,
                 u.email,
                 u.student_no,
                 u.active,
-                COALESCE(p.department, '') AS department
+                COALESCE(p.department, '') AS department,
+
+                EXISTS (
+                    SELECT 1
+                    FROM teacher_marks m
+                    WHERE m.student_id=u.id
+                      AND m.class_id=?
+                      AND (
+                          m.assessment IS NOT NULL
+                          OR m.mid IS NOT NULL
+                          OR m.final IS NOT NULL
+                      )
+                ) AS has_marks
+
             FROM users u
+
             LEFT JOIN student_profiles p
-                ON p.user_id = u.id
-            WHERE u.role = 'student'
+                ON p.user_id=u.id
+
+            WHERE u.role='student'
+            {assignment_filter}
+
             ORDER BY u.name COLLATE NOCASE, u.id
-            """
+            """,
+            [selected_class_id, *parameters],
         ).fetchall()
 
     return render_template(
         "admin/student_details.html",
         students=students,
+        classes=classes,
+        semesters=semesters,
+        selected_class=selected_class,
+        selected_class_id=selected_class_id,
+        selected_semester=selected_semester,
     )
 
 
@@ -213,7 +330,7 @@ def create_student_account():
         with database() as db:
             student_id = db.execute(
                 """
-                INSERT INTO users (
+                INSERT INTO users(
                     name,
                     email,
                     student_no,
@@ -221,7 +338,7 @@ def create_student_account():
                     role,
                     active
                 )
-                VALUES (?, ?, ?, ?, 'student', 1)
+                VALUES(?, ?, ?, ?, 'student', 1)
                 """,
                 (
                     fields["name"],
@@ -233,12 +350,12 @@ def create_student_account():
 
             db.execute(
                 """
-                INSERT INTO student_profiles (
+                INSERT INTO student_profiles(
                     user_id,
                     phone,
                     department
                 )
-                VALUES (?, ?, ?)
+                VALUES(?, ?, ?)
                 """,
                 (
                     student_id,
@@ -284,9 +401,9 @@ def set_student_status(student_id):
         db.execute(
             """
             UPDATE users
-            SET active = ?
-            WHERE id = ?
-              AND role = 'student'
+            SET active=?
+            WHERE id=?
+              AND role='student'
             """,
             (int(active), student_id),
         )
@@ -331,12 +448,12 @@ def student_account(student_id):
             db.execute(
                 """
                 UPDATE users
-                SET name = ?,
-                    email = ?,
-                    student_no = ?,
-                    active = ?
-                WHERE id = ?
-                  AND role = 'student'
+                SET name=?,
+                    email=?,
+                    student_no=?,
+                    active=?
+                WHERE id=?
+                  AND role='student'
                 """,
                 (
                     fields["name"],
@@ -349,16 +466,16 @@ def student_account(student_id):
 
             db.execute(
                 """
-                INSERT INTO student_profiles (
+                INSERT INTO student_profiles(
                     user_id,
                     phone,
                     department
                 )
-                VALUES (?, ?, ?)
+                VALUES(?, ?, ?)
 
                 ON CONFLICT(user_id) DO UPDATE SET
-                    phone = excluded.phone,
-                    department = excluded.department
+                    phone=excluded.phone,
+                    department=excluded.department
                 """,
                 (
                     student_id,
@@ -408,9 +525,9 @@ def reset_student_password(student_id):
             db.execute(
                 """
                 UPDATE users
-                SET password_hash = ?
-                WHERE id = ?
-                  AND role = 'student'
+                SET password_hash=?
+                WHERE id=?
+                  AND role='student'
                 """,
                 (hashed, student_id),
             )
@@ -442,8 +559,8 @@ def class_tasks():
             """
             SELECT id, name
             FROM users
-            WHERE role = 'teacher'
-              AND active = 1
+            WHERE role='teacher'
+              AND active=1
             ORDER BY name COLLATE NOCASE, id
             """
         ).fetchall()
@@ -461,12 +578,15 @@ def class_tasks():
                 (
                     SELECT COUNT(*)
                     FROM teacher_enrolments e
-                    WHERE e.class_id = c.id
+                    WHERE e.class_id=c.id
                 ) AS student_count
+
             FROM teacher_classes c
-            JOIN users u
-                ON u.id = c.teacher_id
-            WHERE c.setup_removed = 0
+
+            JOIN users u ON u.id=c.teacher_id
+
+            WHERE c.setup_removed=0
+
             ORDER BY c.semester, c.code, c.id
             """
         ).fetchall()
@@ -518,9 +638,9 @@ def create_student_class_setup():
                 """
                 SELECT id
                 FROM users
-                WHERE id = ?
-                  AND role = 'teacher'
-                  AND active = 1
+                WHERE id=?
+                  AND role='teacher'
+                  AND active=1
                 """,
                 (teacher_id,),
             ).fetchone()
@@ -532,7 +652,7 @@ def create_student_class_setup():
 
             class_id = db.execute(
                 """
-                INSERT INTO teacher_classes (
+                INSERT INTO teacher_classes(
                     teacher_id,
                     code,
                     name,
@@ -544,7 +664,7 @@ def create_student_class_setup():
                     setup_removed,
                     teacher_removed
                 )
-                VALUES (?, ?, ?, ?, ?, 20, 30, 50, 0, 0)
+                VALUES(?, ?, ?, ?, ?, 20, 30, 50, 0, 0)
                 """,
                 (
                     teacher_id,
@@ -557,13 +677,13 @@ def create_student_class_setup():
 
             db.executemany(
                 """
-                INSERT INTO class_weekly_slots (
+                INSERT INTO class_weekly_slots(
                     class_id,
                     weekday,
                     start_time,
                     end_time
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES(?, ?, ?, ?)
                 """,
                 [
                     (class_id, day, start, end)
@@ -602,7 +722,7 @@ def remove_class_setup(class_id):
             """
             SELECT id
             FROM teacher_classes
-            WHERE id = ?
+            WHERE id=?
             """,
             (class_id,),
         ).fetchone()
@@ -613,8 +733,8 @@ def remove_class_setup(class_id):
         db.execute(
             """
             UPDATE teacher_classes
-            SET setup_removed = 1
-            WHERE id = ?
+            SET setup_removed=1
+            WHERE id=?
             """,
             (class_id,),
         )
@@ -631,7 +751,7 @@ def remove_class_setup(class_id):
     )
 
 
-# STUDENT CLASS ASSIGNMENT AND RESULTS
+# STUDENT CLASS ASSIGNMENTS AND RESULTS
 
 @bp.get(
     "/student-details/<int:student_id>/classes"
@@ -650,12 +770,15 @@ def student_classes(student_id):
                 c.semester,
                 c.class_time,
                 u.name AS teacher_name
+
             FROM teacher_classes c
-            JOIN users u
-                ON u.id = c.teacher_id
+
+            JOIN users u ON u.id=c.teacher_id
+
             WHERE TRIM(COALESCE(c.semester, '')) <> ''
-              AND c.setup_removed = 0
-              AND c.teacher_removed = 0
+              AND c.setup_removed=0
+              AND c.teacher_removed=0
+
             ORDER BY c.semester, c.code, c.id
             """
         ).fetchall()
@@ -675,28 +798,37 @@ def student_classes(student_id):
                 m.assessment,
                 m.mid,
                 m.final,
+
                 (
                     m.assessment IS NOT NULL
                     OR m.mid IS NOT NULL
                     OR m.final IS NOT NULL
                 ) AS has_marks,
+
                 COALESCE(
                     NULLIF(TRIM(t.semester), ''),
                     NULLIF(TRIM(c.semester), ''),
                     'Semester not assigned'
                 ) AS semester
+
             FROM teacher_enrolments e
+
             JOIN teacher_classes c
-                ON c.id = e.class_id
+                ON c.id=e.class_id
+
             JOIN users u
-                ON u.id = c.teacher_id
+                ON u.id=c.teacher_id
+
             LEFT JOIN teacher_marks m
-                ON m.class_id = e.class_id
-                AND m.student_id = e.student_id
+                ON m.class_id=e.class_id
+                AND m.student_id=e.student_id
+
             LEFT JOIN student_enrolment_terms t
-                ON t.class_id = e.class_id
-                AND t.student_id = e.student_id
-            WHERE e.student_id = ?
+                ON t.class_id=e.class_id
+                AND t.student_id=e.student_id
+
+            WHERE e.student_id=?
+
             ORDER BY semester, c.code, c.id
             """,
             (student_id,),
@@ -720,13 +852,12 @@ def assign_student_class(student_id):
     class_id = request.form.get("class_id", type=int)
 
     with database() as db:
-        # Keep availability checking and assignment
-        # inside the same write transaction.
+        # Acquire a write lock before checking availability.
         db.execute(
             """
             UPDATE teacher_classes
-            SET setup_removed = setup_removed
-            WHERE id = ?
+            SET setup_removed=setup_removed
+            WHERE id=?
             """,
             (class_id,),
         )
@@ -737,9 +868,9 @@ def assign_student_class(student_id):
             """
             SELECT id, semester
             FROM teacher_classes
-            WHERE id = ?
-              AND setup_removed = 0
-              AND teacher_removed = 0
+            WHERE id=?
+              AND setup_removed=0
+              AND teacher_removed=0
             """,
             (class_id,),
         ).fetchone()
@@ -761,12 +892,12 @@ def assign_student_class(student_id):
         else:
             db.execute(
                 """
-                INSERT OR IGNORE INTO teacher_enrolments (
+                INSERT OR IGNORE INTO teacher_enrolments(
                     class_id,
                     student_id,
                     joined_on
                 )
-                VALUES (?, ?, ?)
+                VALUES(?, ?, ?)
                 """,
                 (
                     class_id,
@@ -777,16 +908,16 @@ def assign_student_class(student_id):
 
             db.execute(
                 """
-                INSERT INTO student_enrolment_terms (
+                INSERT INTO student_enrolment_terms(
                     class_id,
                     student_id,
                     semester
                 )
-                VALUES (?, ?, ?)
+                VALUES(?, ?, ?)
 
                 ON CONFLICT(class_id, student_id)
                 DO UPDATE SET
-                    semester = excluded.semester
+                    semester=excluded.semester
                 """,
                 (
                     class_id,
@@ -809,10 +940,11 @@ def assign_student_class(student_id):
     )
 
 
-# REMOVE STUDENT ASSIGNMENT ONLY BEFORE MARKS
+# REMOVE ASSIGNMENT FROM STUDENT'S DETAILS PAGE
 
 @bp.post(
-    "/student-details/<int:student_id>/classes/<int:class_id>/remove"
+    "/student-details/<int:student_id>"
+    "/classes/<int:class_id>/remove"
 )
 @require("admin")
 def remove_student_class(student_id, class_id):
@@ -838,6 +970,47 @@ def remove_student_class(student_id, class_id):
         url_for(
             "admin_portal.student_classes",
             student_id=student_id,
+        ),
+        code=303,
+    )
+
+
+# REMOVE ASSIGNMENT FROM FILTERED STUDENT LIST
+
+@bp.post(
+    "/student-details/<int:student_id>"
+    "/classes/<int:class_id>/remove-from-list"
+)
+@require("admin")
+def remove_student_class_from_list(student_id, class_id):
+    semester = request.form.get(
+        "semester", ""
+    ).strip()
+
+    try:
+        with database() as db:
+            find_student(db, student_id)
+
+            remove_student_enrolment(
+                db,
+                class_id,
+                student_id,
+            )
+
+        flash(
+            "Student removed from the selected class. "
+            "The student account is unchanged.",
+            "success",
+        )
+
+    except ValueError as error:
+        flash(str(error), "danger")
+
+    return redirect(
+        url_for(
+            "admin_portal.student_details",
+            class_id=class_id,
+            semester=semester,
         ),
         code=303,
     )

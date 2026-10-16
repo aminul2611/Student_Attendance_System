@@ -1416,13 +1416,22 @@ def not_found(_error):
         message="The requested page was not found.",
     ), 404
 
+
 from portal import init_portals
+from portal.student_portal import init_student_portal
 
 
 with app.app_context():
     init_db()
-    init_portals(app, connect_db, DATABASE, CAMPUS_TZ)
 
+    init_portals(
+        app,
+        connect_db,
+        DATABASE,
+        CAMPUS_TZ,
+    )
+
+    init_student_portal(app)
 
 if __name__ == "__main__":
     app.run(

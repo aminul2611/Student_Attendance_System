@@ -1,0 +1,780 @@
+/* ADMIN NOTICE CENTRE */
+.notices-page {
+    --ink: #283b53;
+    --muted: #718197;
+    --border: #dce5ef;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 30px;
+    color: var(--ink);
+}
+
+.notices-page,
+.notices-page * {
+    box-sizing: border-box;
+}
+
+.notices-page [hidden] {
+    display: none !important;
+}
+
+.notices-page > h1 {
+    margin: 0;
+    color: #263c56;
+    font-size: 31px;
+    font-weight: 750;
+    letter-spacing: -.8px;
+}
+
+.notices-page > p.muted {
+    margin: 9px 0 27px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+/* Main cards */
+.notices-page .panel,
+.notices-page .admin-received-notices {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 25px;
+    padding: 27px;
+    border: 1px solid var(--border);
+    border-radius: 19px;
+    background: #fff;
+    box-shadow:
+        0 3px 6px rgb(33 58 91 / 3%),
+        0 12px 30px rgb(33 58 91 / 5%);
+}
+
+.notices-page h2 {
+    color: #344d6b;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.notices-page .muted {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Received notices card */
+.notices-page .admin-received-notices {
+    border-color: #d2e3d9;
+    border-top: 4px solid #96bda5;
+    background: linear-gradient(125deg, #f1f8f4, #fff 75%);
+}
+
+.notices-page .admin-received-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #deebe3;
+}
+
+.notices-page .admin-received-heading h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: #3d634b;
+}
+
+.notices-page .admin-received-heading h2::before {
+    content: "↙";
+    display: grid;
+    flex: 0 0 41px;
+    height: 41px;
+    place-items: center;
+    border: 1px solid #d2e4d9;
+    border-radius: 13px;
+    background: #e2efe7;
+    color: #648a71;
+    font-size: 24px;
+}
+
+.notices-page .admin-received-heading p {
+    margin: 8px 0 0;
+    color: #758c7d;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.notices-page .admin-received-count {
+    flex-shrink: 0;
+    padding: 8px 13px;
+    border: 1px solid #d3e3d9;
+    border-radius: 20px;
+    background: #fff;
+    color: #5c7e67;
+    font-size: 11px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.notices-page .admin-received-item {
+    margin-top: 13px;
+    padding: 19px 20px;
+    border: 1px solid #dbe7df;
+    border-left: 4px solid #9bbba7;
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 3px 10px rgb(53 87 63 / 3%);
+}
+
+.notices-page .admin-received-item summary {
+    color: #385c45;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.notices-page .admin-received-item summary::marker {
+    color: #89a994;
+}
+
+.notices-page .admin-received-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 11px;
+}
+
+.notices-page .admin-received-meta span {
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: #f0f6f2;
+    color: #708979;
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+.notices-page .admin-received-body {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #e4ede7;
+    border-radius: 9px;
+    background: #f8fbf9;
+    color: #4e6857;
+    font-size: 13px;
+    line-height: 1.95;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.notices-page .admin-received-empty {
+    padding: 30px 18px;
+    border: 1px dashed #cbded2;
+    border-radius: 13px;
+    background: #ffffffb3;
+    text-align: center;
+}
+
+.notices-page .admin-received-empty::before {
+    content: "▤";
+    display: grid;
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 13px;
+    place-items: center;
+    border-radius: 14px;
+    background: #e8f2ec;
+    color: #83a58f;
+    font-size: 25px;
+}
+
+.notices-page .admin-received-empty strong {
+    display: block;
+    color: #587762;
+    font-size: 14px;
+}
+
+.notices-page .admin-received-empty p {
+    max-width: 420px;
+    margin: 8px auto 0;
+    color: #809487;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Create notice card */
+.notices-page #notice-form {
+    display: block;
+    border-top: 4px solid #9eb9df;
+}
+
+.notices-page #notice-form-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e9eef5;
+}
+
+.notices-page #notice-form-heading::before {
+    content: "＋";
+    display: grid;
+    flex: 0 0 41px;
+    height: 41px;
+    place-items: center;
+    border: 1px solid #dce6f5;
+    border-radius: 13px;
+    background: #edf3fd;
+    color: #7c99c2;
+    font-size: 25px;
+    font-weight: 400;
+}
+
+.notices-page .notice-top-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.notices-page #notice-form label {
+    display: block;
+    min-width: 0;
+    color: #5a6f8a;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.7;
+}
+
+.notices-page #notice-form input:not([type="checkbox"]):not([type="hidden"]),
+.notices-page #notice-form select,
+.notices-page #notice-form textarea {
+    display: block;
+    width: 100%;
+    margin: 8px 0 0;
+    padding: 12px 14px;
+    border: 1px solid #d8e3f0;
+    border-radius: 10px;
+    background: #fbfcff;
+    color: #3c5574;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.7;
+    box-shadow: none;
+}
+
+.notices-page #notice-form input:not([type="checkbox"]):not([type="hidden"]),
+.notices-page #notice-form select {
+    min-height: 46px;
+}
+
+.notices-page #notice-form textarea {
+    min-height: 175px;
+    resize: vertical;
+    line-height: 1.9;
+}
+
+.notices-page #notice-form input::placeholder,
+.notices-page #notice-form textarea::placeholder {
+    color: #96a5b9;
+}
+
+.notices-page #notice-form input:focus,
+.notices-page #notice-form select:focus,
+.notices-page #notice-form textarea:focus {
+    outline: none;
+    border-color: #9fb9dd;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgb(143 173 216 / 14%);
+}
+
+.notices-page #notice-form > h2:not(#notice-form-heading) {
+    margin: 27px 0 17px;
+    padding-top: 23px;
+    border-top: 1px solid #e9eef5;
+    font-size: 16px;
+}
+
+.notices-page #notice-form > p.muted {
+    margin: 12px 0;
+}
+
+.notices-page #recipient-count {
+    display: inline-block;
+    min-width: 25px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #edf3fc;
+    color: #6f8db8;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Recipient group cards */
+.notices-page .notice-recipient-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.notices-page .recipient-group {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #d8e3f1;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgb(53 83 126 / 3%);
+}
+
+.notices-page .recipient-group-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 17px;
+    border-bottom: 1px solid #dfe8f4;
+    background: #eff4fc;
+}
+
+.notices-page .recipient-group h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #617fa8;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.notices-page .recipient-group h3::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #91add3;
+}
+
+.notices-page .recipient-group:nth-child(2) {
+    border-color: #d9e7df;
+}
+
+.notices-page .recipient-group:nth-child(2)
+.recipient-group-heading {
+    border-bottom-color: #deebe3;
+    background: #eef7f2;
+}
+
+.notices-page .recipient-group:nth-child(2) h3 {
+    color: #658a73;
+}
+
+.notices-page .recipient-group:nth-child(2) h3::before {
+    background: #91b59e;
+}
+
+.notices-page .recipient-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.notices-page .recipient-tools button {
+    margin: 0;
+    padding: 5px 9px;
+    border: 1px solid #d7e2ef;
+    border-radius: 7px;
+    background: #fff;
+    color: #728bae;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.6;
+    cursor: pointer;
+}
+
+.notices-page .recipient-tools button:hover {
+    background: #e5eefb;
+}
+
+.notices-page .recipient-list {
+    max-height: 285px;
+    overflow-y: auto;
+    padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #d1ddea transparent;
+}
+
+/* Individual person cards */
+.notices-page #notice-form label.recipient-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin: 0 0 7px;
+    padding: 13px;
+    border: 1px solid #e7edf5;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.notices-page #notice-form label.recipient-option:last-child {
+    margin-bottom: 0;
+}
+
+.notices-page #notice-form label.recipient-option:hover {
+    border-color: #cbdcf2;
+    background: #f8faff;
+}
+
+.notices-page #notice-form label.recipient-option:has(input:checked) {
+    border-color: #afc6e8;
+    background: #eef4fd;
+    box-shadow: inset 3px 0 0 #96b2d9;
+}
+
+.notices-page #notice-form
+.recipient-group:nth-child(2)
+label.recipient-option:has(input:checked) {
+    border-color: #b0cebc;
+    background: #eef7f2;
+    box-shadow: inset 3px 0 0 #91b59e;
+}
+
+.notices-page .recipient-option input[type="checkbox"] {
+    flex: 0 0 17px;
+    width: 17px;
+    height: 17px;
+    margin: 3px 0 0;
+    accent-color: #7c9cc8;
+    cursor: pointer;
+}
+
+.notices-page .recipient-group:nth-child(2)
+input[type="checkbox"] {
+    accent-color: #739f82;
+}
+
+.notices-page .recipient-option > span {
+    min-width: 0;
+}
+
+.notices-page .recipient-option strong {
+    display: block;
+    color: #48617f;
+    font-size: 12px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.notices-page .recipient-option small {
+    display: block;
+    margin-top: 4px;
+    color: #8595aa;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.notices-page .recipient-list > p.muted {
+    padding: 10px;
+}
+
+/* Form footer */
+.notices-page .form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 22px;
+    border-top: 1px solid #e9eef5;
+}
+
+.notices-page .form-actions button,
+.notices-page .form-actions a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    margin: 0;
+    padding: 11px 21px;
+    border: 1px solid #c1d3ee;
+    border-radius: 10px;
+    background: #e0eafb;
+    color: #496d9f;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.6;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.notices-page .form-actions button:hover {
+    background: #d1e0f7;
+}
+
+.notices-page .form-actions a.secondary {
+    border-color: #dfe5ed;
+    background: #f6f8fb;
+    color: #7f8da0;
+}
+
+.notices-page .form-actions button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+/* All notices card */
+.notices-page > section.panel {
+    border-top: 4px solid #c0aed6;
+}
+
+.notices-page > section.panel > h2 {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 0 0 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #ece7f3;
+    color: #79658e;
+}
+
+.notices-page > section.panel > h2::before {
+    content: "▤";
+    display: grid;
+    flex: 0 0 37px;
+    height: 37px;
+    place-items: center;
+    border-radius: 11px;
+    background: #f1ecf8;
+    color: #9a83b2;
+    font-size: 22px;
+}
+
+.notices-page #notice-list {
+    color: #566d87;
+    overflow-wrap: anywhere;
+}
+
+.notices-page #notice-list p {
+    line-height: 1.9;
+}
+
+.notices-page #notice-list .table-wrap {
+    overflow-x: auto;
+}
+
+.notices-page #notice-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.notices-page #notice-list th {
+    padding: 13px 15px;
+    border-bottom: 1px solid #dfe6f0;
+    background: #f4f7fc;
+    color: #7487a1;
+    font-size: 11px;
+    text-align: left;
+}
+
+.notices-page #notice-list td {
+    padding: 16px 15px;
+    border-bottom: 1px solid #edf1f6;
+    color: #58708d;
+    font-size: 12px;
+    line-height: 1.8;
+    vertical-align: top;
+}
+
+.notices-page #notice-list tbody tr:hover {
+    background: #fafcff;
+}
+
+/* Feedback and keyboard focus */
+.notices-page #notice-message {
+    margin: 0 0 20px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.notices-page button:focus-visible,
+.notices-page a:focus-visible,
+.notices-page summary:focus-visible {
+    outline: 3px solid #bacdeb;
+    outline-offset: 3px;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .notices-page .notice-recipient-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .notices-page > h1 {
+        font-size: 26px;
+    }
+
+    .notices-page .panel,
+    .notices-page .admin-received-notices {
+        padding: 18px;
+        border-radius: 15px;
+    }
+
+    .notices-page .notice-top-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .notices-page .admin-received-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .notices-page .admin-received-heading h2 {
+        font-size: 17px;
+    }
+
+    .notices-page .admin-received-item {
+        padding: 15px;
+    }
+
+    .notices-page .form-actions button,
+    .notices-page .form-actions a.button {
+        flex: 1;
+    }
+}
+.notices-page .admin-notice-compose {
+    margin-bottom: 25px;
+    overflow: hidden;
+    border: 1px solid #d8e3f0;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgb(38 61 94 / 4%);
+}
+
+.notices-page .admin-compose-toggle {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 19px 22px;
+    background: #f2f6fd;
+    list-style: none;
+    cursor: pointer;
+}
+
+.notices-page .admin-compose-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.notices-page .admin-compose-icon {
+    display: grid;
+    flex: 0 0 37px;
+    height: 37px;
+    place-items: center;
+    border-radius: 11px;
+    background: #e1eafb;
+    color: #6f91bf;
+    font-size: 23px;
+}
+
+.notices-page .admin-compose-toggle strong {
+    display: block;
+    color: #42618a;
+    font-size: 15px;
+}
+
+.notices-page .admin-compose-toggle small {
+    display: block;
+    margin-top: 4px;
+    color: #8295af;
+    font-size: 11px;
+}
+
+.notices-page .admin-compose-chevron {
+    margin-left: auto;
+    color: #7892b5;
+    font-size: 22px;
+    transition: transform .2s;
+}
+
+.notices-page .admin-notice-compose[open]
+.admin-compose-chevron {
+    transform: rotate(180deg);
+}
+
+.notices-page .admin-notice-compose[open]
+.admin-compose-toggle {
+    border-bottom: 1px solid #dfe7f3;
+}
+
+.notices-page .admin-notice-compose #notice-form {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.notices-page .admin-notice-compose #notice-form-heading {
+    display: none;
+}
+
+.notices-page .admin-compose-toggle:focus-visible {
+    outline: 3px solid #a9c2e6;
+    outline-offset: -4px;
+}
+.notices-page .notice-section-filter {
+    padding: 15px 17px;
+    border-bottom: 1px solid #deebe3;
+    background: #f9fcfa;
+}
+
+.notices-page #notice-form .notice-section-filter label {
+    color: #597863;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.notices-page #notice-form .notice-section-filter select {
+    min-height: 41px;
+    margin-top: 7px;
+    padding: 9px 11px;
+    border: 1px solid #ccdfd2;
+    border-radius: 9px;
+    background: #fff;
+    color: #4f735b;
+    font-size: 12px;
+}
+
+.notices-page .notice-section-filter p {
+    margin: 8px 0 0;
+    color: #7d9585;
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+.notices-page .recipient-no-results {
+    padding: 18px 10px;
+    text-align: center;
+}
+
+.notices-page [hidden] {
+    display: none !important;
+}

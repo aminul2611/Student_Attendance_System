@@ -5,212 +5,509 @@
 {% block content %}
 
 <style>
-.home-flash-list {
+.sc-home {
+    --home-text: #253c32;
+    --home-muted: #607469;
+
     width: 100%;
-    max-width: 1100px;
-    margin: 0 auto 24px;
+    max-width: 1080px;
+    margin: 15px auto 30px;
+    color: var(--home-text);
 }
 
-.home-flash {
+.sc-home,
+.sc-home * {
+    box-sizing: border-box;
+}
+
+.sc-home .sh-welcome {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 12px;
-    padding: 15px 20px;
-    border: 1px solid #dce5f0;
-    border-radius: 12px;
-    background: #f0f5ff;
-    color: #34558b;
-    font-size: 14px;
+    gap: 25px;
+    margin-bottom: 24px;
+    padding: 28px 30px;
+    border: 1px solid #d7e6dc;
+    border-radius: 19px;
+    background: linear-gradient(120deg, #eaf5ee, #f9fcfa);
+}
+
+.sc-home .sh-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #50745e;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.5px;
+}
+
+.sc-home .sh-eyebrow::before {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6d9d7e;
+    content: "";
+}
+
+.sc-home .sh-welcome h1 {
+    margin: 13px 0 10px;
+    color: #284a36;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.18;
+    letter-spacing: -1px;
+}
+
+.sc-home .sh-welcome h1 span {
+    color: #5c8069;
+}
+
+.sc-home .sh-welcome p {
+    max-width: 540px;
+    margin: 0;
+    color: var(--home-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.sc-home .sh-emblem {
+    display: grid;
+    flex: 0 0 85px;
+    width: 85px;
+    height: 85px;
+    place-items: center;
+    border: 1px solid #d0e2d6;
+    border-radius: 25px;
+    background: #ffffffb8;
+    color: #527a60;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow: 0 8px 22px rgb(43 76 54 / 4%);
+}
+
+.sc-home .sh-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin: 0 0 14px;
+}
+
+.sc-home .sh-section-heading h2 {
+    margin: 0;
+    color: var(--home-text);
+    font-size: 17px;
+}
+
+.sc-home .sh-section-heading p {
+    margin: 0;
+    color: var(--home-muted);
+    font-size: 11px;
+}
+
+.sc-home .sh-roles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.sc-home a.sh-role {
+    --role-color: #78619a;
+    --role-soft: #f2edf8;
+    --role-border: #e1d7ec;
+
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid #dfe6e2;
+    border-top: 3px solid var(--role-border);
+    border-radius: 16px;
+    background: #fff;
+    color: var(--home-text);
+    text-decoration: none;
+    box-shadow: 0 5px 18px rgb(35 57 44 / 3%);
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.sc-home a.sh-teacher {
+    --role-color: #39745d;
+    --role-soft: #eaf5ee;
+    --role-border: #cce2d4;
+}
+
+.sc-home a.sh-student {
+    --role-color: #4b739e;
+    --role-soft: #edf3fa;
+    --role-border: #d3e1f0;
+}
+
+.sc-home a.sh-role:hover {
+    transform: translateY(-4px);
+    border-color: var(--role-border);
+    box-shadow: 0 12px 28px rgb(35 57 44 / 8%);
+}
+
+.sc-home .sh-role-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.sc-home .sh-icon {
+    display: grid;
+    width: 45px;
+    height: 45px;
+    place-items: center;
+    border: 1px solid var(--role-border);
+    border-radius: 13px;
+    background: var(--role-soft);
+    color: var(--role-color);
+    font-size: 23px;
+}
+
+.sc-home .sh-number {
+    color: #7f9186;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.sc-home .sh-role-label {
+    color: var(--role-color);
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 1.3px;
+}
+
+.sc-home .sh-role h3 {
+    margin: 9px 0;
+    color: var(--home-text);
+    font-size: 25px;
+    line-height: 1.3;
+    letter-spacing: -.5px;
+}
+
+.sc-home .sh-description {
+    margin: 0;
+    color: var(--home-muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.sc-home .sh-features {
+    display: grid;
+    gap: 10px;
+    margin: 22px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sc-home .sh-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #52685b;
+    font-size: 11px;
     line-height: 1.6;
 }
 
-.home-flash-success {
-    background: #eaf8f0;
-    border-color: #c8ead7;
-    color: #176b49;
+.sc-home .sh-features li::before {
+    color: var(--role-color);
+    font-weight: 750;
+    content: "✓";
 }
 
-.home-flash-danger,
-.home-flash-error {
-    background: #fff0f2;
-    border-color: #f3cdd5;
-    color: #a52d45;
-}
-
-.home-flash-warning {
-    background: #fff8e6;
-    border-color: #f0dfae;
-    color: #805d18;
-}
-
-.home-flash-close {
-    display: inline-flex;
+.sc-home .sh-action {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: 0;
-    border-radius: 7px;
-    background: transparent;
-    color: inherit;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding: 12px 13px;
+    border: 1px solid var(--role-border);
+    border-radius: 9px;
+    background: var(--role-soft);
+    color: var(--role-color);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sc-home .sh-action > span {
+    font-size: 17px;
+}
+
+.sc-home .sh-bottom {
+    margin: 23px 0 0;
+    color: #667d6e;
+    font-size: 11px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.sc-home a.sh-role:focus-visible {
+    outline: 3px solid var(--role-color);
+    outline-offset: 4px;
+}
+
+@media (max-width: 800px) {
+    .sc-home .sh-roles {
+        grid-template-columns: 1fr;
+    }
+
+    .sc-home a.sh-role {
+        padding: 22px;
+    }
+
+    .sc-home .sh-role-top {
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 550px) {
+    .sc-home {
+        margin-top: 5px;
+    }
+
+    .sc-home .sh-welcome {
+        padding: 23px;
+    }
+
+    .sc-home .sh-emblem {
+        display: none;
+    }
+
+    .sc-home .sh-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sc-home a.sh-role {
+        transition: none;
+    }
+
+    .sc-home a.sh-role:hover {
+        transform: none;
+    }
+}
+/* Compact home page */
+.sc-home {
+    max-width: 1020px;
+    margin: 5px auto 20px;
+}
+
+.sc-home .sh-welcome {
+    gap: 16px;
+    margin-bottom: 18px;
+    padding: 17px 22px;
+    border-radius: 14px;
+}
+
+.sc-home .sh-eyebrow {
+    font-size: 8px;
+    letter-spacing: 1.2px;
+}
+
+.sc-home .sh-welcome h1 {
+    margin: 8px 0;
+    font-size: 27px;
+    line-height: 1.15;
+    letter-spacing: -.6px;
+}
+
+.sc-home .sh-welcome p {
+    max-width: 600px;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.sc-home .sh-emblem {
+    flex: 0 0 54px;
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+    font-size: 19px;
+}
+
+.sc-home .sh-section-heading {
+    margin-bottom: 12px;
+}
+
+.sc-home .sh-section-heading h2 {
+    font-size: 15px;
+}
+
+.sc-home .sh-roles {
+    gap: 14px;
+}
+
+.sc-home a.sh-role {
+    padding: 18px;
+    border-radius: 13px;
+}
+
+.sc-home .sh-role-top {
+    margin-bottom: 16px;
+}
+
+.sc-home .sh-icon {
+    width: 37px;
+    height: 37px;
+    border-radius: 10px;
+    font-size: 19px;
+}
+
+.sc-home .sh-role h3 {
+    margin: 7px 0;
     font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
 }
 
-.home-flash-close:hover {
-    background: rgba(0, 0, 0, 0.06);
+.sc-home .sh-features {
+    gap: 8px;
+    margin: 16px 0;
 }
 
-.home-flash-close:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+.sc-home .sh-action {
+    padding: 10px 11px;
+    font-size: 11px;
 }
+
+@media (max-width: 550px) {
+    .sc-home .sh-welcome {
+        padding: 16px;
+    }
+
+    .sc-home .sh-welcome h1 {
+        font-size: 24px;
+    }
+}
+
+
 </style>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="home-flash-list">
-        {% for category, message in messages %}
-        <div class="home-flash home-flash-{{ category }}"
-             role="status">
+<div class="sc-home">
 
-            <span>{{ message }}</span>
+    <section class="sh-welcome">
+        <div>
+            <span class="sh-eyebrow">YOUR CAMPUS, CONNECTED</span>
 
-            <button type="button"
-                    class="home-flash-close"
-                    aria-label="Close message">
-                <span aria-hidden="true">×</span>
-            </button>
+            <h1>
+                One campus.<br>
+                <span>Every connection matters.</span>
+            </h1>
 
+            <p>
+                Your classes, people and progress in one place.
+                Choose your role to open your workspace.
+            </p>
         </div>
-        {% endfor %}
+
+        <span class="sh-emblem" aria-hidden="true">SC</span>
+    </section>
+
+    <div class="sh-section-heading">
+        <h2>Choose your workspace</h2>
+        <p>Select the role assigned to your account.</p>
     </div>
-    {% endif %}
-{% endwith %}
 
-<section class="portal-welcome">
-    <span class="portal-tag">
-        <span></span>
-        YOUR CAMPUS, CONNECTED
-    </span>
+    <section class="sh-roles" aria-label="Choose your role">
 
-    <h1>
-        One campus.<br>
-        <span>Three ways to connect.</span>
-    </h1>
+        <a class="sh-role sh-admin"
+           href="{{ url_for('login', role='admin') }}">
 
-    <p>
-        Choose your role to access your workspace, classes and progress.
+            <div class="sh-role-top">
+                <span class="sh-icon" aria-hidden="true">▦</span>
+                <span class="sh-number">01</span>
+            </div>
+
+            <span class="sh-role-label">CAMPUS MANAGEMENT</span>
+            <h3>Admin</h3>
+
+            <p class="sh-description">
+                Bring your campus accounts, classes and activity together.
+            </p>
+
+            <ul class="sh-features">
+                <li>Teacher and student accounts</li>
+                <li>Class setup and weekly schedules</li>
+                <li>Attendance reports and notices</li>
+            </ul>
+
+            <span class="sh-action">
+                Continue as Admin
+                <span aria-hidden="true">→</span>
+            </span>
+
+        </a>
+
+        <a class="sh-role sh-teacher"
+           href="{{ url_for('login', role='teacher') }}">
+
+            <div class="sh-role-top">
+                <span class="sh-icon" aria-hidden="true">▤</span>
+                <span class="sh-number">02</span>
+            </div>
+
+            <span class="sh-role-label">TEACHING WORKSPACE</span>
+            <h3>Teacher</h3>
+
+            <p class="sh-description">
+                Stay organized with your classes and student progress.
+            </p>
+
+            <ul class="sh-features">
+                <li>Assigned classes and student details</li>
+                <li>Attendance and student marks</li>
+                <li>Class sessions and campus notices</li>
+            </ul>
+
+            <span class="sh-action">
+                Continue as Teacher
+                <span aria-hidden="true">→</span>
+            </span>
+
+        </a>
+
+        <a class="sh-role sh-student"
+           href="{{ url_for('login', role='student') }}">
+
+            <div class="sh-role-top">
+                <span class="sh-icon" aria-hidden="true">✦</span>
+                <span class="sh-number">03</span>
+            </div>
+
+            <span class="sh-role-label">YOUR LEARNING SPACE</span>
+            <h3>Student</h3>
+
+            <p class="sh-description">
+                Keep your learning and academic updates within reach.
+            </p>
+
+            <ul class="sh-features">
+                <li>Your enrolled classes</li>
+                <li>Attendance and academic results</li>
+                <li>Campus announcements and updates</li>
+            </ul>
+
+            <span class="sh-action">
+                Continue as Student
+                <span aria-hidden="true">→</span>
+            </span>
+
+        </a>
+
+    </section>
+
+    <p class="sh-bottom">
+        Smart Campus · A connected space for your campus community.
     </p>
-</section>
-
-<section class="portal-roles" aria-label="Choose your role">
-
-    <a class="portal-role role-admin"
-       href="{{ url_for('login', role='admin') }}"
-       target="_self">
-
-        <div class="role-top">
-            <span class="role-icon" aria-hidden="true">⚙</span>
-            <span class="role-number">01</span>
-        </div>
-
-        <span class="role-label">CAMPUS MANAGEMENT</span>
-
-        <h2>Admin</h2>
-
-        <p>
-            Keep people, classes and campus activity organized.
-        </p>
-
-        <ul>
-            <li>Teacher & student accounts</li>
-            <li>Class assignments</li>
-            <li>Reports & monitoring</li>
-        </ul>
-
-        <span class="role-action">
-            Continue as Admin
-            <span aria-hidden="true">↗</span>
-        </span>
-    </a>
-
-    <a class="portal-role role-teacher"
-       href="{{ url_for('login', role='teacher') }}"
-       target="_self">
-
-        <div class="role-top">
-            <span class="role-icon" aria-hidden="true">▤</span>
-            <span class="role-number">02</span>
-        </div>
-
-        <span class="role-label">TEACHING WORKSPACE</span>
-
-        <h2>Teacher</h2>
-
-        <p>
-            Bring your classes, coursework and student progress together.
-        </p>
-
-        <ul>
-            <li>QR & manual attendance</li>
-            <li>Homework & class notices</li>
-            <li>Marks & student reports</li>
-        </ul>
-
-        <span class="role-action">
-            Continue as Teacher
-            <span aria-hidden="true">↗</span>
-        </span>
-    </a>
-
-    <a class="portal-role role-student"
-       href="{{ url_for('login', role='student') }}"
-       target="_self">
-
-        <div class="role-top">
-            <span class="role-icon" aria-hidden="true">✦</span>
-            <span class="role-number">03</span>
-        </div>
-
-        <span class="role-label">YOUR LEARNING SPACE</span>
-
-        <h2>Student</h2>
-
-        <p>
-            Stay on top of your classes, assignments and achievements.
-        </p>
-
-        <ul>
-            <li>Your enrolled classes</li>
-            <li>Homework & attendance</li>
-            <li>Notices & published marks</li>
-        </ul>
-
-        <span class="role-action">
-            Continue as Student
-            <span aria-hidden="true">↗</span>
-        </span>
-    </a>
-
-</section>
-
-<div class="portal-bottom">
-    <span>Everything for your class, in one place.</span>
 
 </div>
-
-<script>
-document.querySelectorAll(".home-flash-close").forEach(button => {
-    button.addEventListener("click", () => {
-        button.closest(".home-flash").remove();
-    });
-});
-</script>
 
 {% endblock %}
