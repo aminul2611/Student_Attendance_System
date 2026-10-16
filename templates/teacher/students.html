@@ -1,47 +1,333 @@
-<!DOCTYPE html>
-<{% extends 'teacher/base.html' %}
+{% extends 'teacher/base.html' %}
 
 {% block title %}Student Details{% endblock %}
 
 {% block content %}
 
-<h1>Student Details</h1>
-<p class="muted">Students enrolled in your assigned class.</p>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/students.css', v='2') }}">
 
-{% include 'teacher/class_picker.html' %}
+<div class="ts-page">
 
-{% if classroom %}
+    <header class="ts-heading">
+        <div>
+            <span class="ts-eyebrow">TEACHER WORKSPACE</span>
 
-<section class="panel table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Registered</th>
-                <th>Account</th>
-            </tr>
-        </thead>
+            <h1>Student Details</h1>
 
-        <tbody>
-            {% for s in students %}
-            <tr data-search="{{ s.name }} {{ s.student_no }} {{ s.email }}">
-                <td>{{ s.student_no }}</td>
-                <td>{{ s.name }}</td>
-                <td>{{ s.email }}</td>
-                <td>{{ s.created_at[:10] }}</td>
-                <td>{{ 'Active' if s.active else 'Disabled' }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="5">No students enrolled.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
+            <p>Choose a class to view its enrolled students.</p>
+        </div>
 
-{% endif %}
+        <div class="ts-total">
+            <span class="ts-total-icon"
+                  aria-hidden="true">♙</span>
+
+            <div>
+                <strong>
+                    {{ students|length if classroom else '—' }}
+                </strong>
+
+                <span>
+                    {{ 'Enrolled students' if classroom else 'Select a class first' }}
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <section class="ts-class-panel"
+             aria-labelledby="ts-class-heading">
+
+        <div class="ts-panel-title">
+            <span class="ts-icon"
+                  aria-hidden="true">▤</span>
+
+            <div>
+                <h2 id="ts-class-heading">Your classroom</h2>
+                <p>Select a class assigned to you.</p>
+            </div>
+        </div>
+
+        {% if classes %}
+
+        <form class="ts-picker"
+              method="get"
+              action="{{ url_for('teacher.students') }}">
+
+            <label for="ts-class-select">Select class</label>
+
+            <div class="ts-picker-controls">
+
+                <select id="ts-class-select"
+                        name="class_id">
+
+                    <option value=""
+                            {% if not classroom %}selected{% endif %}>
+                        — Select a class —
+                    </option>
+
+                    {% for c in classes %}
+                    <option value="{{ c.id }}"
+                            {% if classroom and c.id == classroom.id %}
+                                selected
+                            {% endif %}>
+                        {{ c.code }} — {{ c.name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <button type="submit"
+                        class="ts-button">
+                    View students →
+                </button>
+
+            </div>
+
+            <p class="ts-picker-note">
+                Changing the class automatically loads its student list.
+            </p>
+
+        </form>
+
+        {% if classroom %}
+
+        <div class="ts-selected-class">
+            <span class="ts-class-code">
+                {{ classroom.code }}
+            </span>
+
+            <strong>{{ classroom.name }}</strong>
+
+            <span class="ts-assigned">Assigned class</span>
+        </div>
+
+        {% else %}
+
+        <div class="ts-empty">
+            <span aria-hidden="true">▤</span>
+            <h3>Select a class</h3>
+            <p>
+                Choose a class above to view student information.
+            </p>
+        </div>
+
+        {% endif %}
+
+        {% else %}
+
+        <div class="ts-empty">
+            <span aria-hidden="true">▤</span>
+            <h3>No classes assigned</h3>
+
+            <p>
+                Your classes will appear here after the admin assigns them.
+            </p>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    {% if classroom %}
+
+    <section class="ts-students-panel"
+             aria-labelledby="ts-students-heading">
+
+        <div class="ts-list-heading">
+            <div>
+                <div class="ts-title-row">
+                    <h2 id="ts-students-heading">
+                        Enrolled students
+                    </h2>
+
+                    <span class="ts-count">
+                        {{ students|length }}
+                    </span>
+                </div>
+
+                <p>
+                    Student information for {{ classroom.name }}.
+                </p>
+            </div>
+
+            <div class="ts-search">
+                <label for="ts-student-search">
+                    Search students
+                </label>
+
+                <input id="ts-student-search"
+                       type="search"
+                       placeholder="Name, Student ID or email"
+                       autocomplete="off"
+                       aria-controls="ts-student-list">
+            </div>
+        </div>
+
+        <div class="ts-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Student</th>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Email address</th>
+                        <th scope="col">Registered</th>
+                        <th scope="col">Account</th>
+                    </tr>
+                </thead>
+
+                <tbody id="ts-student-list">
+
+                    {% for student in students %}
+
+                    <tr data-student-row
+                        data-student-search="{{ student.name }} {{ student.student_no or '' }} {{ student.email }}">
+
+                        <td>
+                            <div class="ts-person">
+                                <span class="ts-avatar"
+                                      aria-hidden="true">
+                                    {{ student.name[:1]|upper }}
+                                </span>
+
+                                <strong>
+                                    {{ student.name }}
+                                </strong>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="ts-student-id">
+                                {{ student.student_no or '—' }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <a class="ts-email"
+                               href="mailto:{{ student.email }}">
+                                {{ student.email }}
+                            </a>
+                        </td>
+
+                        <td>
+                            {{ student.created_at[:10] if student.created_at else '—' }}
+                        </td>
+
+                        <td>
+                            <span class="ts-status {{ 'is-active' if student.active else 'is-disabled' }}">
+                                <span aria-hidden="true">●</span>
+
+                                {{ 'Active' if student.active else 'Disabled' }}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    <tr id="ts-no-results"
+                        {% if students %}hidden{% endif %}>
+
+                        <td colspan="5">
+                            <div class="ts-empty">
+                                <span aria-hidden="true">♙</span>
+
+                                <h3 id="ts-empty-title">
+                                    No students enrolled
+                                </h3>
+
+                                <p id="ts-empty-description">
+                                    Students will appear after the admin assigns them to this class.
+                                </p>
+                            </div>
+                        </td>
+
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ts-list-footer">
+            <span id="ts-visible-count"
+                  role="status"
+                  aria-live="polite">
+                {{ students|length }} students
+            </span>
+
+            <span>{{ classroom.code }}</span>
+        </div>
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+<script>
+(() => {
+    const select = document.getElementById("ts-class-select");
+
+    if (select) {
+        select.addEventListener("change", () => {
+            select.form.requestSubmit();
+        });
+    }
+
+    const search = document.getElementById("ts-student-search");
+
+    if (!search) {
+        return;
+    }
+
+    const rows = Array.from(
+        document.querySelectorAll("[data-student-row]")
+    );
+
+    const empty = document.getElementById("ts-no-results");
+    const emptyTitle = document.getElementById("ts-empty-title");
+    const emptyDescription = document.getElementById(
+        "ts-empty-description"
+    );
+    const count = document.getElementById("ts-visible-count");
+
+    function filterStudents() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const matches = row.dataset.studentSearch
+                .toLocaleLowerCase()
+                .includes(query);
+
+            row.hidden = !matches;
+
+            if (matches) {
+                visible++;
+            }
+        });
+
+        empty.hidden = visible > 0;
+
+        if (rows.length === 0) {
+            emptyTitle.textContent = "No students enrolled";
+
+            emptyDescription.textContent =
+                "Students will appear after the admin assigns them to this class.";
+        } else {
+            emptyTitle.textContent = "No matching students";
+
+            emptyDescription.textContent =
+                "Try another name, Student ID or email.";
+        }
+
+        count.textContent =
+            `Showing ${visible} of ${rows.length} students`;
+    }
+
+    search.addEventListener("input", filterStudents);
+
+    filterStudents();
+})();
+</script>
 
 {% endblock %}

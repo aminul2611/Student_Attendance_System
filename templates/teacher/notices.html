@@ -1,0 +1,204 @@
+{% extends 'teacher/base.html' %}
+
+{% block title %}Notices{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/notices.css', v='1') }}">
+
+<div class="tn-page">
+
+    <header class="tn-heading">
+        <span>TEACHER WORKSPACE</span>
+        <h1>Notice Centre</h1>
+        <p>Read campus updates and share notices with your students.</p>
+    </header>
+
+    <div class="tn-layout">
+
+        <section class="tn-panel">
+            <div class="tn-panel-heading">
+                <span class="tn-icon" aria-hidden="true">↗</span>
+                <div>
+                    <h2>Send a notice</h2>
+                    <p>Choose your recipients before sending.</p>
+                </div>
+            </div>
+
+            <form method="post"
+                  action="{{ url_for('teacher.notices') }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <label for="tn-audience">Send to</label>
+                <select id="tn-audience" name="audience" required>
+                    <option value="">Choose recipients</option>
+                    <option value="admin"
+                            {% if request.form.get('audience') == 'admin' %}selected{% endif %}>
+                        Admin
+                    </option>
+                    <option value="class"
+                            {% if request.form.get('audience') == 'class' %}selected{% endif %}>
+                        A class / section
+                    </option>
+                    <option value="students"
+                            {% if request.form.get('audience') == 'students' %}selected{% endif %}>
+                        Selected students
+                    </option>
+                </select>
+
+                <div id="tn-class-field" hidden>
+                    <label for="tn-class">Class / section</label>
+
+                    <select id="tn-class" name="class_id">
+                        <option value="">Select your class</option>
+                        {% for c in classes %}
+                        <option value="{{ c.id }}"
+                                {% if request.form.get('class_id') == c.id|string %}selected{% endif %}>
+                            {{ c.code }} — {{ c.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="tn-help">
+                        Sends to the active students currently enrolled.
+                    </p>
+                </div>
+
+                <fieldset id="tn-student-field" hidden>
+                    <legend>Select students</legend>
+
+                    <div class="tn-students">
+                        {% for student in students %}
+                        <label class="tn-student">
+                            <input type="checkbox"
+                                   name="student_ids"
+                                   value="{{ student.id }}"
+                                   {% if student.id|string in request.form.getlist('student_ids') %}checked{% endif %}>
+
+                            <span>
+                                <strong>{{ student.name }}</strong>
+                                <small>{{ student.student_no or 'No Student ID' }}</small>
+                            </span>
+                        </label>
+                        {% else %}
+                        <p class="tn-help">No eligible students in your classes.</p>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+            <label class="tn-student tn-also-admin">
+                  <input type="checkbox"
+                       name="also_admin"
+                       value="1"
+                       {% if request.form.get('also_admin') == '1' %}checked{% endif %}>
+
+                <span>
+                    <strong>Also send to Admin</strong>
+                    <small>Send this notice to Admin along with your selected students.</small>
+                </span>
+            </label>
+
+                <label for="tn-title">Notice title</label>
+                <input id="tn-title"
+                       name="title"
+                       maxlength="140"
+                       placeholder="Enter a clear, short title"
+                       value="{{ request.form.get('title', '') }}"
+                       required>
+
+                <label for="tn-body">Message</label>
+                <textarea id="tn-body"
+                          name="body"
+                          maxlength="5000"
+                          rows="7"
+                          placeholder="Write your notice here..."
+                          required>{{ request.form.get('body', '') }}</textarea>
+
+                <div class="tn-form-footer">
+                    <p>Delivered to selected recipients.</p>
+                    <button type="submit">Send notice →</button>
+                </div>
+
+            </form>
+        </section>
+
+        <div class="tn-feed">
+
+            <section class="tn-panel">
+                <div class="tn-list-heading">
+                    <h2>Received notices</h2>
+                    <span class="tn-count">{{ received|length }}</span>
+                </div>
+
+                {% for notice in received %}
+                <details class="tn-notice" open>
+                    <summary>{{ notice.title }}</summary>
+                    <small class="tn-meta">
+                        {{ notice.author or 'Campus' }}
+                        · {{ notice.created_at[:16]|replace('T', ' ') }}
+                    </small>
+                    <div class="tn-body">{{ notice.body }}</div>
+                </details>
+                {% else %}
+                <div class="tn-empty">
+                    <span aria-hidden="true">▤</span>
+                    <h3>No notices yet</h3>
+                    <p>Your received notices will appear here.</p>
+                </div>
+                {% endfor %}
+            </section>
+
+            <section class="tn-panel">
+                <div class="tn-list-heading">
+                    <h2>Sent notices</h2>
+                    <span class="tn-count">{{ sent|length }}</span>
+                </div>
+
+                {% for notice in sent %}
+                <details class="tn-notice tn-sent">
+                    <summary>{{ notice.title }}</summary>
+                    <small class="tn-meta">
+                        {{ notice.recipient_count }} recipients
+                        · {{ notice.created_at[:16]|replace('T', ' ') }}
+                        · {{ 'Published' if notice.active else 'Draft' }}
+                    </small>
+                    <div class="tn-body">{{ notice.body }}</div>
+                </details>
+                {% else %}
+                <p class="tn-help">You have not sent any notices yet.</p>
+                {% endfor %}
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const audience = document.getElementById("tn-audience");
+    const classField = document.getElementById("tn-class-field");
+    const classSelect = document.getElementById("tn-class");
+    const studentField = document.getElementById("tn-student-field");
+
+    function updateAudience() {
+        const isClass = audience.value === "class";
+        const isStudents = audience.value === "students";
+
+        classField.hidden = !isClass;
+        classSelect.disabled = !isClass;
+        classSelect.required = isClass;
+
+        studentField.hidden = !isStudents;
+        studentField.disabled = !isStudents;
+    }
+
+    audience.addEventListener("change", updateAudience);
+    updateAudience();
+})();
+</script>
+
+{% endblock %}

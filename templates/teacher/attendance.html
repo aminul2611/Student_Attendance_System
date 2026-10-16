@@ -4,121 +4,445 @@
 
 {% block content %}
 
-<h1>Student Attendance</h1>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/attendance.css', v='2') }}">
 
-<p class="muted">
-    Manually mark attendance for students in your class.
-</p>
+<div class="ta-page">
 
-{% include 'teacher/class_picker.html' %}
-
-{% if classroom %}
-
-<form method="get" class="picker">
-
-    <input type="hidden"
-           name="class_id"
-           value="{{ classroom.id }}">
-
-    <label>
-        Class session
-
-        <select name="lesson_id" onchange="this.form.submit()">
-            {% for l in lessons %}
-            <option value="{{ l.id }}"
-                    {% if lesson and l.id==lesson.id %}selected{% endif %}>
-                {{ l.lesson_date }} · {{ l.start_time }} ·
-                {{ l.topic or 'Class session' }}
-            </option>
-            {% endfor %}
-        </select>
-    </label>
-
-    <noscript>
-        <button>Open session</button>
-    </noscript>
-</form>
-
-{% if lesson %}
-
-<section class="panel">
-
-    <h2>
-        {{ lesson.lesson_date }} ·
-        {{ lesson.start_time }}–{{ lesson.end_time }}
-    </h2>
-
-    {% if lesson.lesson_date > today %}
-    <p class="flash warning">
-        Attendance can be taken on the class date or afterwards.
-    </p>
-    {% endif %}
-
-    {% for s in students %}
-
-    <form method="post"
-          class="attendance-row"
-          data-search="{{ s.name }} {{ s.student_no }}">
-
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
-
-        <input type="hidden"
-               name="class_id"
-               value="{{ classroom.id }}">
-
-        <input type="hidden"
-               name="lesson_id"
-               value="{{ lesson.id }}">
-
-        <input type="hidden"
-               name="student_id"
-               value="{{ s.id }}">
-
+    <header class="ta-heading">
         <div>
-            <b>{{ s.name }}</b>
-            <small>
-                {{ s.student_no }} · {{ s.status or 'Not marked' }}
-            </small>
+            <span class="ta-eyebrow">ATTENDANCE WORKSPACE</span>
+            <h1>Student Attendance</h1>
+            <p>Select a class and date to view its students.</p>
         </div>
 
-        <select name="status"
-                aria-label="Attendance for {{ s.name }}"
-                required
-                {% if lesson.lesson_date>today %}disabled{% endif %}>
+        <div class="ta-total">
+            <span class="ta-icon" aria-hidden="true">☑</span>
+            <div>
+                <strong>
+                    {{ students|length if classroom else '—' }}
+                </strong>
+                <small>Eligible students</small>
+            </div>
+        </div>
+    </header>
 
-            <option value="">Select status</option>
+    <section class="ta-picker-panel">
 
-            {% for status in ['Present','Absent','Late','Excused'] %}
-            <option {% if s.status==status %}selected{% endif %}>
-                {{ status }}
-            </option>
+        <div class="ta-panel-title">
+            <span class="ta-icon" aria-hidden="true">▤</span>
+            <div>
+                <h2>Class and date</h2>
+                <p>Choose the attendance date for your class.</p>
+            </div>
+        </div>
+
+        <form method="get"
+              action="{{ url_for('teacher.attendance') }}"
+              id="ta-filter-form">
+
+            <div class="ta-picker-grid">
+
+                <div>
+                    <label for="ta-class-select">Class</label>
+
+                    <div class="ta-controls">
+                        <select id="ta-class-select"
+                                name="class_id">
+
+                            <option value="">— Select a class —</option>
+
+                            {% for c in classes %}
+                            <option value="{{ c.id }}"
+                                    {% if classroom and c.id == classroom.id %}
+                                        selected
+                                    {% endif %}>
+                                {{ c.code }} — {{ c.name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="ta-date">Attendance date</label>
+
+                    <div class="ta-controls">
+                        <input id="ta-date"
+                               type="date"
+                               name="attendance_date"
+                               value="{{ attendance_date }}"
+                               max="{{ attendance_today }}"
+                               required>
+
+                        <button type="submit" class="ta-button">
+                            View →
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        {% if classroom %}
+        <div class="ta-selected">
+            <span>{{ classroom.code }}</span>
+            <strong>{{ classroom.name }}</strong>
+        </div>
+        {% endif %}
+
+    </section>
+
+    {% if classroom %}
+
+    <section class="ta-picker-panel">
+
+        <div class="ta-panel-title">
+            <span class="ta-icon" aria-hidden="true">◷</span>
+            <div>
+                <h2>Attendance session</h2>
+                <p>{{ attendance_date }}</p>
+            </div>
+        </div>
+
+        {% if lessons %}
+
+        <form method="get"
+              action="{{ url_for('teacher.attendance') }}">
+
+            <input type="hidden"
+                   name="class_id"
+                   value="{{ classroom.id }}">
+
+            <input type="hidden"
+                   name="attendance_date"
+                   value="{{ attendance_date }}">
+
+            <div class="ta-controls">
+                <select id="ta-session-select"
+                        name="lesson_id"
+                        aria-label="Select attendance session">
+
+                    <option value="">— Select a session —</option>
+
+                    {% for item in lessons %}
+                    <option value="{{ item.id }}"
+                            {% if lesson and item.id == lesson.id %}
+                                selected
+                            {% endif %}>
+                        {{ item.start_time }}–{{ item.end_time }}
+                        · {{ item.topic or 'Class session' }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <button type="submit" class="ta-button">
+                    Open
+                </button>
+            </div>
+        </form>
+
+        {% else %}
+        <p class="ta-selection-note">
+            No session for this date. Create one below to save attendance.
+        </p>
+        {% endif %}
+
+        {% if attendance_date <= attendance_today %}
+        <details class="ta-create-session"
+                 {% if not lessons %}open{% endif %}>
+
+            <summary>＋ Create a session for this date</summary>
+
+            <form method="post"
+                  action="{{ url_for('teacher.attendance') }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <input type="hidden"
+                       name="action"
+                       value="create_session">
+
+                <input type="hidden"
+                       name="class_id"
+                       value="{{ classroom.id }}">
+
+                <input type="hidden"
+                       name="attendance_date"
+                       value="{{ attendance_date }}">
+
+                <div class="ta-picker-grid">
+
+                    <label>
+                        Start time
+                        <input type="time"
+                               name="start_time"
+                               value="{{ form_values.start_time }}"
+                               required>
+                    </label>
+
+                    <label>
+                        End time
+                        <input type="time"
+                               name="end_time"
+                               value="{{ form_values.end_time }}"
+                               required>
+                    </label>
+
+                    <label>
+                        Room
+                        <input name="room"
+                               maxlength="100"
+                               value="{{ form_values.room }}">
+                    </label>
+
+                    <label>
+                        Topic
+                        <input name="topic"
+                               maxlength="200"
+                               value="{{ form_values.topic }}">
+                    </label>
+
+                </div>
+
+                <button type="submit" class="ta-button">
+                    Create session & open attendance →
+                </button>
+
+            </form>
+        </details>
+        {% endif %}
+
+    </section>
+
+    {% set can_save =
+        lesson and lesson.lesson_date <= attendance_today
+    %}
+
+    <section class="ta-list-panel">
+
+        <div class="ta-list-heading">
+            <div>
+                <h2>Student attendance</h2>
+                <p>{{ classroom.name }} · {{ attendance_date }}</p>
+
+                {% if lesson %}
+                <p>
+                    {{ lesson.start_time }}–{{ lesson.end_time }}
+                    · {{ lesson.topic or 'Class session' }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="ta-search">
+                <label for="ta-search">Search students</label>
+                <input id="ta-search"
+                       type="search"
+                       placeholder="Name or Student ID"
+                       aria-controls="ta-student-list">
+            </div>
+        </div>
+
+        {% if not can_save %}
+        <p class="ta-warning">
+            {% if attendance_date > attendance_today %}
+                Future attendance cannot be recorded.
+            {% else %}
+                Student names are shown below.
+                Create or select a session above to save attendance.
+            {% endif %}
+        </p>
+        {% endif %}
+
+        {% if can_save %}
+            {% for s in students %}
+            <form id="ta-form-{{ s.id }}"
+                  method="post"
+                  action="{{ url_for('teacher.attendance') }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <input type="hidden"
+                       name="action"
+                       value="save_attendance">
+
+                <input type="hidden"
+                       name="class_id"
+                       value="{{ classroom.id }}">
+
+                <input type="hidden"
+                       name="attendance_date"
+                       value="{{ attendance_date }}">
+
+                <input type="hidden"
+                       name="lesson_id"
+                       value="{{ lesson.id }}">
+
+                <input type="hidden"
+                       name="student_id"
+                       value="{{ s.id }}">
+            </form>
             {% endfor %}
+        {% endif %}
 
-        </select>
+        <div class="ta-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Saved status</th>
+                        <th>Mark attendance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
-        <button {% if lesson.lesson_date>today %}disabled{% endif %}>
-            Save
-        </button>
+                <tbody id="ta-student-list">
 
-    </form>
+                    {% for s in students %}
+                    <tr data-attendance-row
+                        data-attendance-search="{{ s.name }} {{ s.student_no or '' }}">
 
-    {% else %}
-    <p class="empty">
-        No eligible students enrolled for this session date.
-    </p>
-    {% endfor %}
+                        <td>
+                            <div class="ta-person">
+                                <span class="ta-avatar" aria-hidden="true">
+                                    {{ s.name[:1]|upper }}
+                                </span>
+                                <strong>{{ s.name }}</strong>
+                            </div>
+                        </td>
 
-</section>
+                        <td>
+                            <span class="ta-student-id">
+                                {{ s.student_no or '—' }}
+                            </span>
+                        </td>
 
-{% else %}
+                        <td>
+                            <span class="ta-status ta-{{ s.status|lower if s.status else 'unmarked' }}">
+                                {{ s.status or 'Not marked' }}
+                            </span>
+                        </td>
 
-<p class="empty">
-    Schedule a class session under Daily Classes first.
-</p>
+                        <td>
+                            <select name="status"
+                                    class="ta-status-select"
+                                    {% if can_save %}
+                                    form="ta-form-{{ s.id }}"
+                                    {% endif %}
+                                    aria-label="Attendance for {{ s.name }}"
+                                    required
+                                    {% if not can_save %}disabled{% endif %}>
 
-{% endif %}
-{% endif %}
+                                <option value="">Select status</option>
+
+                                {% for status in [
+                                    'Present', 'Absent', 'Late', 'Excused'
+                                ] %}
+                                <option value="{{ status }}"
+                                        {% if s.status == status %}selected{% endif %}>
+                                    {{ status }}
+                                </option>
+                                {% endfor %}
+
+                            </select>
+                        </td>
+
+                        <td>
+                            <button class="ta-save"
+                                    type="submit"
+                                    {% if can_save %}
+                                    form="ta-form-{{ s.id }}"
+                                    {% endif %}
+                                    {% if not can_save %}disabled{% endif %}>
+                                Save
+                            </button>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                    <tr id="ta-empty-row"
+                        {% if students %}hidden{% endif %}>
+                        <td colspan="5">
+                            <div class="ta-empty">
+                                <h3>No students found</h3>
+                                <p>
+                                    Students must be active and enrolled
+                                    by the selected date.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ta-footer">
+            <span id="ta-visible-count"
+                  role="status"
+                  aria-live="polite">
+                {{ students|length }} students
+            </span>
+            <span>Choose a status and Save each row.</span>
+        </div>
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+<script>
+(() => {
+    ["ta-class-select", "ta-date", "ta-session-select"].forEach(id => {
+        const field = document.getElementById(id);
+
+        if (field) {
+            field.addEventListener("change", () => {
+                field.form.requestSubmit();
+            });
+        }
+    });
+
+    const search = document.getElementById("ta-search");
+
+    if (!search) {
+        return;
+    }
+
+    const rows = Array.from(
+        document.querySelectorAll("[data-attendance-row]")
+    );
+    const empty = document.getElementById("ta-empty-row");
+    const count = document.getElementById("ta-visible-count");
+
+    search.addEventListener("input", () => {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            row.hidden = !row.dataset.attendanceSearch
+                .toLocaleLowerCase()
+                .includes(query);
+
+            if (!row.hidden) {
+                visible++;
+            }
+        });
+
+        empty.hidden = visible > 0;
+        count.textContent =
+            `Showing ${visible} of ${rows.length} students`;
+    });
+})();
+</script>
 
 {% endblock %}

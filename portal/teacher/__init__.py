@@ -16,3 +16,4 @@ from . import (
     profile,
     calendar_page,
 )
+from . import notices

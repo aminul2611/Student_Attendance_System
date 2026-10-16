@@ -1,48 +1,89 @@
-<aside class="sidebar">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/sidebar.css', v='2') }}">
 
-    <a class="brand" href="{{ url_for('teacher.dashboard') }}">
-        <span class="logo">SC</span>
-        <span>
-            Smart Campus
+<aside class="sidebar teacher-sidebar">
+
+    <a class="brand tsb-brand"
+       href="{{ url_for('teacher.dashboard') }}">
+
+        <span class="logo tsb-logo">SC</span>
+
+        <span class="tsb-brand-copy">
+            <strong>Smart Campus</strong>
             <small>Teacher workspace</small>
         </span>
+
     </a>
 
-    <nav aria-label="Teacher menu">
+    <div class="tsb-menu-label">YOUR WORKSPACE</div>
 
-        {% for endpoint,label,symbol in [
-            ('teacher.dashboard','Dashboard','▦'),
-            ('teacher.students','Student Details','♙'),
-            ('teacher.marks','Student Marks','✓'),
-            ('teacher.attendance','Student Attendance','☑'),
-            ('teacher.classes','Daily Classes','▤'),
-            ('teacher.calendar_page','Calendar','▣'),
-            ('teacher.my_attendance','My Attendance','◷'),
-            ('teacher.profile','Teacher Profile','◎'),
-            ('teacher.password','Change Password','⚿')
+    <nav class="tsb-nav" aria-label="Teacher menu">
+
+        {% for endpoint, label, symbol in [
+            ('teacher.dashboard', 'Dashboard', '▦'),
+            ('teacher.students', 'Student Details', '♙'),
+            ('teacher.marks', 'Student Marks', '✓'),
+            ('teacher.attendance', 'Student Attendance', '☑'),
+            ('teacher.classes', 'Daily Classes', '▤'),
+            ('teacher.notices', 'Notices', '▤'),
+            ('teacher.my_attendance', 'My Attendance', '◷'),
+            ('teacher.profile', 'Teacher Profile', '◎')
         ] %}
 
-        <a href="{{ url_for(endpoint) }}"
-           class="{{ 'active' if request.endpoint==endpoint else '' }}"
-           {% if request.endpoint==endpoint %}aria-current="page"{% endif %}>
+        {% set selected = request.endpoint == endpoint
+            or (endpoint == 'teacher.profile'
+                and request.endpoint == 'teacher.password') %}
 
-            <span aria-hidden="true">{{ symbol }}</span>
-            {{ label }}
+        <a href="{{ url_for(endpoint) }}"
+           class="tsb-link {{ 'active' if selected else '' }}"
+           {% if selected %}aria-current="page"{% endif %}>
+
+            <span class="tsb-icon" aria-hidden="true">
+                {{ symbol }}
+            </span>
+
+            <span class="tsb-label">{{ label }}</span>
+
+            {% if selected %}
+            <span class="tsb-active-dot" aria-hidden="true"></span>
+            {% endif %}
+
         </a>
 
         {% endfor %}
 
     </nav>
 
-    <form class="logout"
-          method="post"
-          action="{{ url_for('logout') }}">
+    <div class="tsb-bottom">
 
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
+        <div class="tsb-account">
+            <span class="tsb-avatar">
+                {{ g.user.name[:1]|upper }}
+            </span>
 
-        <button type="submit">↪ Logout</button>
-    </form>
+            <div>
+                <strong>{{ g.user.name }}</strong>
+                <small>Teacher account</small>
+            </div>
+        </div>
+
+        <form class="logout tsb-logout"
+              method="post"
+              action="{{ url_for('logout') }}"
+              target="_self">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <button type="submit">
+                <span aria-hidden="true">↪</span>
+                Log out
+                <span class="tsb-logout-arrow" aria-hidden="true">→</span>
+            </button>
+
+        </form>
+
+    </div>
 
 </aside>

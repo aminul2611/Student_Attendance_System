@@ -4,105 +4,410 @@
 
 {% block content %}
 
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/classes.css', v='2') }}">
+
+<div class="tc-page">
+
+    <header class="tc-heading">
+        <div>
+            <span class="tc-eyebrow">TEACHING SCHEDULE</span>
+            <h1>Daily Classes</h1>
+            <p>Your weekly routine and scheduled class sessions.</p>
+        </div>
+
+        <div class="tc-total">
+            <span class="tc-icon" aria-hidden="true">▦</span>
+
+            <div>
+                <strong>{{ classes|length }}</strong>
+                <small>Assigned classes</small>
+            </div>
+        </div>
+    </header>
+
+    <section class="tc-panel"
+             aria-labelledby="tc-weekly-title">
+
+        <div class="tc-panel-heading">
+
+            <div class="tc-title-group">
+                <span class="tc-icon" aria-hidden="true">◷</span>
+
+                <div>
+                    <h2 id="tc-weekly-title">
+                        Weekly Class Schedule
+                    </h2>
+                    <p>Weekly routines assigned by the admin.</p>
+                </div>
+            </div>
+
+            <div class="tc-search">
+                <label for="tc-class-search">Find a class</label>
+
+                <input id="tc-class-search"
+                       type="search"
+                       placeholder="Class code, subject or semester"
+                       autocomplete="off"
+                       aria-controls="tc-weekly-grid">
+            </div>
+
+        </div>
+
+        <div class="tc-weekly-grid"
+             id="tc-weekly-grid">
+
+            {% for c in classes %}
+
+            <article class="tc-class-card {{ 'is-selected' if classroom and c.id == classroom.id else '' }}"
+                     data-weekly-card
+                     data-class-search="{{ c.code }} {{ c.name }} {{ c.semester or '' }}">
+
+                <div class="tc-card-top">
+                    <span class="tc-code">{{ c.code }}</span>
+
+                    {% if classroom and c.id == classroom.id %}
+                    <span class="tc-selected-badge">Selected</span>
+                    {% endif %}
+                </div>
+
+                <h3>{{ c.name }}</h3>
+
+                <p class="tc-semester">
+                    {{ c.semester or 'Semester not set' }}
+                </p>
+
+                <div class="tc-routine">
+
+                    {% if c.class_time %}
+
+                        {% for slot in c.class_time.split('|') %}
+                            {% if slot.strip() %}
+                            <div class="tc-routine-line">
+                                <span aria-hidden="true">◷</span>
+                                <span>{{ slot.strip() }}</span>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% else %}
+
+                    <p class="tc-time-empty">
+                        Weekly time not set.
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+                <a class="tc-open-class"
+                   href="{{ url_for('teacher.classes', class_id=c.id, _anchor='tc-session-workspace') }}">
+                    Open class
+                    <span aria-hidden="true">→</span>
+                </a>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="tc-empty"
+             id="tc-class-empty"
+             {% if classes %}hidden{% endif %}>
+
+            <span aria-hidden="true">▤</span>
+
+            <h3 id="tc-class-empty-title">
+                No classes assigned
+            </h3>
+
+            <p id="tc-class-empty-description">
+                Your classes will appear after the admin assigns them.
+            </p>
+
+        </div>
+
+        <nav class="tc-pagination"
+             id="tc-pagination"
+             aria-label="Weekly schedule pages"
+             hidden>
+
+            <button type="button"
+                    id="tc-prev"
+                    class="tc-page-button"
+                    aria-controls="tc-weekly-grid">
+                ‹ Previous
+            </button>
+
+            <span id="tc-page-label"
+                  role="status"
+                  aria-live="polite"></span>
+
+            <button type="button"
+                    id="tc-next"
+                    class="tc-page-button"
+                    aria-controls="tc-weekly-grid">
+                Next ›
+            </button>
+
+        </nav>
+
+    </section>
+
+    <section class="tc-picker-panel"
+             aria-labelledby="tc-picker-title">
+
+        <div>
+            <h2 id="tc-picker-title">View class sessions</h2>
+            <p>Select a class to view sessions and open attendance.</p>
+        </div>
+
+        <form method="get"
+              action="{{ url_for('teacher.classes') }}">
+
+            <label for="tc-class-select">Select class</label>
+
+            <div class="tc-picker-controls">
+
+                <select id="tc-class-select"
+                        name="class_id"
+                        {% if not classes %}disabled{% endif %}>
+
+                    <option value=""
+                            {% if not classroom %}selected{% endif %}>
+                        — Select a class —
+                    </option>
+
+                    {% for c in classes %}
+                    <option value="{{ c.id }}"
+                            {% if classroom and c.id == classroom.id %}
+                                selected
+                            {% endif %}>
+                        {{ c.code }} — {{ c.name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <button class="tc-button"
+                        type="submit"
+                        {% if not classes %}disabled{% endif %}>
+                    Open →
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
     {% if classroom %}
-<section class="panel">
-    <h2>Weekly Class Schedule</h2>
 
-    <p>
-        <strong>{{ classroom.code }}</strong>
-        — {{ classroom.name }}
-    </p>
+    <div id="tc-session-workspace"
+         class="tc-workspace">
 
-    <p>
-        Semester: {{ classroom.semester or 'Not set' }}
-    </p>
+        <section class="tc-panel"
+                 aria-labelledby="tc-sessions-title">
 
-    <div style="white-space:pre-line; line-height:1.9;">{{ (classroom.class_time or 'Weekly time not set')|replace(' | ', '\n') }}</div>
-</section>
-{% endif %}
+            <div class="tc-panel-heading">
 
-<h1>Daily Classes</h1>
-<p class="muted">Schedule sessions for your assigned classes.</p>
+                <div class="tc-title-group">
+                    <span class="tc-icon" aria-hidden="true">▤</span>
 
-{% include 'teacher/class_picker.html' %}
+                    <div>
+                        <h2 id="tc-sessions-title">
+                            Scheduled sessions
+                        </h2>
 
-{% if classroom %}
+                        <p>
+                            {{ classroom.code }} · {{ classroom.name }}
+                        </p>
+                    </div>
+                </div>
 
-<form method="post" class="panel form-grid">
+                <span class="tc-count">
+                    {{ lessons|length }}
+                    {{ 'session' if lessons|length == 1 else 'sessions' }}
+                </span>
 
-    <input type="hidden"
-           name="csrf_token"
-           value="{{ csrf_token() }}">
+            </div>
 
-    <input type="hidden"
-           name="class_id"
-           value="{{ classroom.id }}">
+            <div class="tc-session-list">
 
-    <label>
-        Class date
-        <input type="date"
-               name="lesson_date"
-               value="{{ today }}"
-               required>
-    </label>
+                {% for item in lessons %}
 
-    <label>
-        Start time
-        <input type="time" name="start_time" required>
-    </label>
+                <a class="tc-session"
+                   href="{{ url_for('teacher.attendance', class_id=classroom.id, lesson_id=item.id) }}">
 
-    <label>
-        End time
-        <input type="time" name="end_time" required>
-    </label>
+                    <span class="tc-date-tile"
+                          aria-hidden="true">
 
-    <label>
-        Room
-        <input name="room" maxlength="100">
-    </label>
+                        <strong>
+                            {{ item.lesson_date[8:10] }}
+                        </strong>
 
-    <label>
-        Topic
-        <input name="topic" maxlength="200">
-    </label>
+                        <small>
+                            {{ item.lesson_date[5:7] }}/{{ item.lesson_date[:4] }}
+                        </small>
 
-    <div class="form-action">
-        <button>Add class session</button>
+                    </span>
+
+                    <span class="tc-session-info">
+
+                        <strong>{{ classroom.name }}</strong>
+
+                        <small>
+                            {{ item.lesson_date }}
+                            · {{ item.start_time }}–{{ item.end_time }}
+                            · {{ item.room or 'Room not set' }}
+                        </small>
+
+                        {% if item.topic %}
+                        <small>
+                            Topic: {{ item.topic }}
+                        </small>
+                        {% endif %}
+
+                    </span>
+
+                    <span class="tc-attendance-link">
+                        Attendance →
+                    </span>
+
+                </a>
+
+                {% else %}
+
+                <div class="tc-empty">
+                    <span aria-hidden="true">▦</span>
+
+                    <h3>No sessions scheduled</h3>
+
+                    <p>
+                        Create a session from Student Attendance.
+                    </p>
+
+                    <a class="tc-open-class"
+                       href="{{ url_for('teacher.attendance', class_id=classroom.id) }}">
+                        Open Student Attendance →
+                    </a>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
     </div>
 
-</form>
+    {% endif %}
 
-<section class="panel">
+</div>
 
-    <h2>Class schedule</h2>
+<script>
+(() => {
+    const select = document.getElementById("tc-class-select");
 
-    {% for l in lessons %}
+    if (select) {
+        select.addEventListener("change", () => {
+            select.form.requestSubmit();
+        });
+    }
 
-    <a class="list-row"
-       data-search="{{ l.topic }} {{ l.lesson_date }}"
-       href="{{ url_for('teacher.attendance', class_id=classroom.id, lesson_id=l.id) }}">
+    const cards = Array.from(
+        document.querySelectorAll("[data-weekly-card]")
+    );
 
-        <span>
-            <b>
-                {{ l.lesson_date }} ·
-                {{ l.start_time }}–{{ l.end_time }}
-            </b>
+    const search = document.getElementById("tc-class-search");
+    const navigation = document.getElementById("tc-pagination");
+    const previous = document.getElementById("tc-prev");
+    const next = document.getElementById("tc-next");
+    const label = document.getElementById("tc-page-label");
 
-            <small>
-                {{ l.topic or 'Class session' }} ·
-                {{ l.room or 'Room not set' }}
-            </small>
-        </span>
+    const empty = document.getElementById("tc-class-empty");
+    const emptyTitle = document.getElementById(
+        "tc-class-empty-title"
+    );
+    const emptyDescription = document.getElementById(
+        "tc-class-empty-description"
+    );
 
-        <span class="link">Attendance →</span>
-    </a>
+    const pageSize = 6;
 
-    {% else %}
-    <p class="empty">No sessions scheduled yet.</p>
-    {% endfor %}
+    const selectedIndex = cards.findIndex(card => (
+        card.classList.contains("is-selected")
+    ));
 
-</section>
+    let page = selectedIndex >= 0
+        ? Math.floor(selectedIndex / pageSize) + 1
+        : 1;
 
-{% endif %}
+    function renderCards() {
+        const query = search.value.trim().toLocaleLowerCase();
+
+        const matches = cards.filter(card => (
+            card.dataset.classSearch
+                .toLocaleLowerCase()
+                .includes(query)
+        ));
+
+        const pages = Math.max(
+            1,
+            Math.ceil(matches.length / pageSize)
+        );
+
+        page = Math.min(Math.max(page, 1), pages);
+
+        cards.forEach(card => {
+            card.hidden = true;
+        });
+
+        matches
+            .slice((page - 1) * pageSize, page * pageSize)
+            .forEach(card => {
+                card.hidden = false;
+            });
+
+        empty.hidden = matches.length > 0;
+
+        emptyTitle.textContent = cards.length
+            ? "No matching classes"
+            : "No classes assigned";
+
+        emptyDescription.textContent = cards.length
+            ? "Try another class code, subject or semester."
+            : "Your classes will appear after the admin assigns them.";
+
+        navigation.hidden = matches.length <= pageSize;
+
+        label.textContent =
+            `Page ${page} of ${pages} · ${matches.length} classes`;
+
+        previous.disabled = page === 1;
+        next.disabled = page === pages;
+    }
+
+    search.addEventListener("input", () => {
+        page = 1;
+        renderCards();
+    });
+
+    previous.addEventListener("click", () => {
+        if (page > 1) {
+            page--;
+            renderCards();
+        }
+    });
+
+    next.addEventListener("click", () => {
+        page++;
+        renderCards();
+    });
+
+    renderCards();
+})();
+</script>
 
 {% endblock %}

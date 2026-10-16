@@ -21,10 +21,8 @@ from ..common import database, require
 @bp.route("/profile", methods=["GET", "POST"])
 @require("teacher")
 def profile():
-
     if request.method == "POST":
         name = request.form.get("name", "").strip()
-
         phone = request.form.get("phone", "").strip()
         department = request.form.get(
             "department", ""
@@ -51,8 +49,8 @@ def profile():
             db.execute(
                 """
                 UPDATE users
-                SET name=?
-                WHERE id=?
+                SET name = ?
+                WHERE id = ?
                 """,
                 (name, g.user["id"]),
             )
@@ -65,13 +63,11 @@ def profile():
                     department,
                     designation
                 )
-                VALUES(?,?,?,?)
-
-                ON CONFLICT(user_id)
-                DO UPDATE SET
-                    phone=excluded.phone,
-                    department=excluded.department,
-                    designation=excluded.designation
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    phone = excluded.phone,
+                    department = excluded.department,
+                    designation = excluded.designation
                 """,
                 (
                     g.user["id"],
@@ -83,7 +79,7 @@ def profile():
 
         return jsonify(
             ok=True,
-            message="OK — Profile updated successfully.",
+            message="Profile updated successfully.",
             name=name,
         )
 
@@ -92,7 +88,7 @@ def profile():
             """
             SELECT *
             FROM teacher_profiles
-            WHERE user_id=?
+            WHERE user_id = ?
             """,
             (g.user["id"],),
         ).fetchone()
@@ -106,63 +102,87 @@ def profile():
 @bp.route("/password", methods=["GET", "POST"])
 @require("teacher")
 def password():
-
-    if request.method == "POST":
-        current_password = request.form.get(
-            "current_password", ""
-        )
-        new_password = request.form.get(
-            "new_password", ""
-        )
-        confirm_password = request.form.get(
-            "confirm_password", ""
+    if request.method == "GET":
+        return redirect(
+            url_for("teacher.profile", _anchor="change-password")
         )
 
-        if not check_password_hash(
-            g.user["password_hash"],
-            current_password,
-        ):
-            flash(
-                "Current password is incorrect.",
-                "danger",
-            )
+    current_password = request.form.get(
+        "current_password", ""
+    )
+    new_password = request.form.get(
+        "new_password", ""
+    )
+    confirm_password = request.form.get(
+        "confirm_password", ""
+    )
 
-        elif len(new_password) < 8:
-            flash(
-                "New password must contain at least 8 characters.",
-                "danger",
-            )
+    with database() as db:
+        user = db.execute(
+            """
+            SELECT password_hash
+            FROM users
+            WHERE id = ? AND role = 'teacher'
+            """,
+            (g.user["id"],),
+        ).fetchone()
 
-        elif new_password != confirm_password:
-            flash(
-                "New passwords do not match.",
-                "danger",
-            )
-
-        else:
-            with database() as db:
-                db.execute(
-                    """
-                    UPDATE users
-                    SET password_hash=?
-                    WHERE id=?
-                    """,
-                    (
-                        generate_password_hash(new_password),
-                        g.user["id"],
-                    ),
-                )
-
+        if user is None:
             session.clear()
-
-            flash(
-                "Password changed successfully. "
-                "Please log in with your new password.",
-                "success",
-            )
 
             return redirect(
                 url_for("login", role="teacher")
             )
 
-    return render_template("teacher/password.html")
+        if not check_password_hash(
+            user["password_hash"],
+            current_password,
+        ):
+            error = "Current password is incorrect."
+
+        elif not 8 <= len(new_password) <= 128:
+            error = (
+                "New password must contain 8–128 characters."
+            )
+
+        elif new_password != confirm_password:
+            error = "New passwords do not match."
+
+        else:
+            db.execute(
+                """
+                UPDATE users
+                SET password_hash = ?
+                WHERE id = ?
+                """,
+                (
+                    generate_password_hash(new_password),
+                    g.user["id"],
+                ),
+            )
+
+            error = None
+
+    if error:
+        flash(error, "danger")
+
+        return redirect(
+            url_for(
+                "teacher.profile",
+                _anchor="change-password",
+            ),
+            code=303,
+        )
+
+    session.clear()
+
+    flash(
+        "Password changed successfully. "
+        "Please log in with your new password.",
+        "success",
+    )
+
+    return redirect(
+        url_for("login", role="teacher"),
+        code=303,
+    )

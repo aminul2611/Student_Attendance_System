@@ -1,24 +1,25 @@
 {% if campus_notices %}
 
-<section class="panel" aria-label="My notices">
+<section class="panel campus-notice-list"
+         aria-label="My notices">
 
     <h2>My Notices</h2>
 
     {% for notice in campus_notices %}
 
-    <details style="padding:14px 0; border-top:1px solid #e7ebf0">
+    <details class="campus-notice" open>
 
         <summary>
+            <span class="campus-notice-heading">
+                <strong>{{ notice.title }}</strong>
 
-            {{ notice.title }}
-
-            <small>
-                {{ notice.created_at[:16]|replace('T',' ') }}
-            </small>
-
+                <small>
+                    {{ notice.created_at[:16]|replace('T', ' ') }}
+                </small>
+            </span>
         </summary>
 
-        <p style="white-space:pre-wrap; overflow-wrap:anywhere; margin-top:8px">{{ notice.body }}</p>
+        <div class="campus-notice-body">{{ notice.body }}</div>
 
     </details>
 

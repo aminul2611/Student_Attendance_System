@@ -4,91 +4,206 @@
 
 {% block content %}
 
-<h1>Teacher Profile</h1>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/profile.css', v='1') }}">
 
-<p class="muted">
-    Update your personal and professional details.
-</p>
+<div class="tp-page">
 
-<form id="teacher-profile-form"
-      method="post"
-      action="{{ url_for('teacher.profile') }}"
-      class="panel form-grid">
+    <header class="tp-heading">
+        <span>ACCOUNT SETTINGS</span>
+        <h1>Teacher Profile</h1>
+        <p>Manage your personal information and account security.</p>
+    </header>
 
-    <input type="hidden"
-           name="csrf_token"
-           value="{{ csrf_token() }}">
+    <section class="tp-profile-card">
+        <div class="tp-profile-person">
+            <span class="tp-avatar" id="tp-profile-avatar">
+                {{ g.user.name[:1]|upper }}
+            </span>
 
-    <p id="profile-save-message"
-       class="flash"
-       role="status"
-       aria-live="polite"
-       style="grid-column: 1 / -1; margin: 0;"
-       hidden></p>
+            <div>
+                <span class="tp-role">TEACHER ACCOUNT</span>
+                <h2 id="tp-profile-name">{{ g.user.name }}</h2>
+                <p>{{ g.user.email }}</p>
+            </div>
+        </div>
 
-    <label>
-        Full name
+        <span class="tp-account-badge">
+            <span aria-hidden="true">●</span>
+            Teacher workspace
+        </span>
+    </section>
 
-        <input name="name"
-               value="{{ g.user.name }}"
-               maxlength="100"
-               required>
-    </label>
+    <section class="tp-panel">
 
-    <label>
-        Email
+        <div class="tp-section-heading">
+            <span class="tp-section-icon" aria-hidden="true">◎</span>
 
-        <input type="email"
-               value="{{ g.user.email }}"
-               readonly>
-    </label>
+            <div>
+                <h2>Personal information</h2>
+                <p>Keep your contact and professional details up to date.</p>
+            </div>
+        </div>
 
-    {% for key, label in [
-        ('phone', 'Phone'),
-        ('department', 'Department'),
-        ('designation', 'Designation')
-    ] %}
+        <form id="teacher-profile-form"
+              method="post"
+              action="{{ url_for('teacher.profile') }}">
 
-    <label>
-        {{ label }}
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
 
-        <input name="{{ key }}"
-               value="{{ details[key] if details else '' }}"
-               maxlength="150">
-    </label>
+            <p id="profile-save-message"
+               class="tp-message"
+               role="status"
+               aria-live="polite"
+               hidden></p>
 
-    {% endfor %}
+            <div class="tp-fields">
 
-    <div class="form-action">
-        <button id="profile-save-button" type="submit">
-            Save profile
-        </button>
-    </div>
+                <label>
+                    Full name
+                    <input name="name"
+                           value="{{ g.user.name }}"
+                           maxlength="100"
+                           autocomplete="name"
+                           required>
+                </label>
 
-</form>
+                <label>
+                    Email address
+                    <input type="email"
+                           value="{{ g.user.email }}"
+                           autocomplete="email"
+                           readonly>
+                    <small>Contact your admin to change your email.</small>
+                </label>
+
+                <label>
+                    Phone number
+                    <input type="tel"
+                           name="phone"
+                           value="{{ details.phone if details else '' }}"
+                           maxlength="150"
+                           autocomplete="tel"
+                           placeholder="Enter your phone number">
+                </label>
+
+                <label>
+                    Department
+                    <input name="department"
+                           value="{{ details.department if details else '' }}"
+                           maxlength="150"
+                           placeholder="Example: CSE">
+                </label>
+
+                <label>
+                    Designation
+                    <input name="designation"
+                           value="{{ details.designation if details else '' }}"
+                           maxlength="150"
+                           placeholder="Example: Lecturer">
+                </label>
+
+            </div>
+
+            <div class="tp-form-footer">
+                <p>Your email address is managed by the administrator.</p>
+
+                <button id="profile-save-button"
+                        class="tp-button"
+                        type="submit">
+                    Save changes →
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+    <section class="tp-panel tp-security" id="change-password">
+
+        <div class="tp-section-heading">
+            <span class="tp-section-icon" aria-hidden="true">⚿</span>
+
+            <div>
+                <h2>Change password</h2>
+                <p>Choose a strong password to protect your account.</p>
+            </div>
+        </div>
+
+        <form method="post"
+              action="{{ url_for('teacher.password') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="tp-fields">
+
+                <label class="tp-current-password">
+                    Current password
+                    <input type="password"
+                           name="current_password"
+                           autocomplete="current-password"
+                           placeholder="Enter your current password"
+                           required>
+                </label>
+
+                <label>
+                    New password
+                    <input type="password"
+                           name="new_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           placeholder="At least 8 characters"
+                           required>
+                </label>
+
+                <label>
+                    Confirm new password
+                    <input type="password"
+                           name="confirm_password"
+                           minlength="8"
+                           maxlength="128"
+                           autocomplete="new-password"
+                           placeholder="Re-enter your new password"
+                           required>
+                </label>
+
+            </div>
+
+            <div class="tp-security-note">
+                <span aria-hidden="true">ⓘ</span>
+                After changing your password, you will need to log in again.
+            </div>
+
+            <div class="tp-form-footer">
+                <p>Use a password you do not use for other accounts.</p>
+
+                <button class="tp-button tp-password-button"
+                        type="submit">
+                    Update password →
+                </button>
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
 
 <script>
-(function () {
-    const form = document.getElementById(
-        "teacher-profile-form"
-    );
+(() => {
+    const form = document.getElementById("teacher-profile-form");
+    const message = document.getElementById("profile-save-message");
+    const button = document.getElementById("profile-save-button");
 
-    const message = document.getElementById(
-        "profile-save-message"
-    );
-
-    const button = document.getElementById(
-        "profile-save-button"
-    );
-
-    form.addEventListener("submit", async function (event) {
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        if (button.disabled) {
-            return;
-        }
-
-        const formData = new FormData(form);
+        if (button.disabled) return;
 
         message.hidden = true;
         button.disabled = true;
@@ -97,16 +212,15 @@
         try {
             const response = await fetch(form.action, {
                 method: "POST",
-                body: formData,
+                body: new FormData(form),
                 credentials: "same-origin",
                 headers: {
                     "Accept": "application/json"
                 }
             });
 
-            const contentType = response.headers.get(
-                "content-type"
-            ) || "";
+            const contentType =
+                response.headers.get("content-type") || "";
 
             if (!contentType.includes("application/json")) {
                 throw new Error(
@@ -124,30 +238,35 @@
                 );
             }
 
-            message.className = "flash success";
+            message.className = "tp-message is-success";
             message.textContent = data.message;
             message.hidden = false;
 
             form.elements.namedItem("name").value = data.name;
 
-            const avatar = document.querySelector(
-                ".header-right .avatar"
-            );
+            document.getElementById("tp-profile-name").textContent =
+                data.name;
 
-            if (avatar) {
-                avatar.textContent = data.name
-                    .slice(0, 1)
-                    .toUpperCase();
+            const initial = data.name.slice(0, 1).toUpperCase();
+
+            document.getElementById("tp-profile-avatar").textContent =
+                initial;
+
+            const headerAvatar =
+                document.querySelector(".header-right .avatar");
+
+            if (headerAvatar) {
+                headerAvatar.textContent = initial;
             }
 
         } catch (error) {
-            message.className = "flash danger";
+            message.className = "tp-message is-error";
             message.textContent = error.message;
             message.hidden = false;
 
         } finally {
             button.disabled = false;
-            button.textContent = "Save profile";
+            button.textContent = "Save changes →";
         }
     });
 })();

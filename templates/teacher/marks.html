@@ -4,96 +4,387 @@
 
 {% block content %}
 
-<h1>Student Marks</h1>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/marks.css', v='1') }}">
 
-<p class="muted">
-    Assessment, Mid and Final. Leave an ungraded mark blank.
-</p>
+<div class="tm-page">
 
-{% include 'teacher/class_picker.html' %}
-
-{% if classroom %}
-
-<section class="panel">
-
-    <p class="limits">
-        Maximum marks:
-        Assessment {{ classroom.assessment_max|float }} ·
-        Mid {{ classroom.mid_max|float }} ·
-        Final {{ classroom.final_max|float }}
-    </p>
-
-    {% for s in students %}
-
-    <form method="post"
-          class="grade-row"
-          data-search="{{ s.name }} {{ s.student_no }}">
-
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
-
-        <input type="hidden"
-               name="class_id"
-               value="{{ classroom.id }}">
-
-        <input type="hidden"
-               name="student_id"
-               value="{{ s.id }}">
-
+    <header class="tm-heading">
         <div>
-            <b>{{ s.name }}</b>
-            <small>{{ s.student_no }}</small>
+            <span class="tm-eyebrow">ASSESSMENT WORKSPACE</span>
+            <h1>Student Marks</h1>
+            <p>
+                Manage assessment, midterm and final marks.
+            </p>
         </div>
 
-        {% for key,label in [
-            ('assessment','Assessment'),
-            ('mid','Mid'),
-            ('final','Final')
-        ] %}
+        <div class="tm-total-card">
+            <span class="tm-icon" aria-hidden="true">✓</span>
 
-        <label>
-            {{ label }}
+            <div>
+                <strong>
+                    {{ students|length if classroom else '—' }}
+                </strong>
 
-            <input type="number"
-                   step="any"
-                   min="0"
-                   max="{{ classroom[key ~ '_max'] }}"
-                   name="{{ key }}"
-                   value="{{ s[key] if s[key] is not none else '' }}"
-                   {% if not s.active %}disabled{% endif %}>
-        </label>
+                <small>
+                    {{ 'Enrolled students' if classroom else 'Select a class first' }}
+                </small>
+            </div>
+        </div>
+    </header>
 
+    <section class="tm-class-panel"
+             aria-labelledby="tm-class-title">
+
+        <div class="tm-panel-title">
+            <span class="tm-icon" aria-hidden="true">▤</span>
+
+            <div>
+                <h2 id="tm-class-title">Your classroom</h2>
+                <p>Select a class to view and update marks.</p>
+            </div>
+        </div>
+
+        {% if classes %}
+
+        <form method="get"
+              action="{{ url_for('teacher.marks') }}"
+              class="tm-picker">
+
+            <label for="tm-class-select">Select class</label>
+
+            <div class="tm-picker-controls">
+                <select id="tm-class-select"
+                        name="class_id">
+
+                    <option value=""
+                            {% if not classroom %}selected{% endif %}>
+                        — Select a class —
+                    </option>
+
+                    {% for c in classes %}
+                    <option value="{{ c.id }}"
+                            {% if classroom and c.id == classroom.id %}
+                                selected
+                            {% endif %}>
+                        {{ c.code }} — {{ c.name }}
+                    </option>
+                    {% endfor %}
+
+                </select>
+
+                <button type="submit" class="tm-button">
+                    View marks →
+                </button>
+            </div>
+        </form>
+
+        {% if classroom %}
+        <div class="tm-selected">
+            <span>{{ classroom.code }}</span>
+            <strong>{{ classroom.name }}</strong>
+        </div>
+        {% else %}
+        <p class="tm-selection-note">
+            Choose a class above to load its students.
+        </p>
+        {% endif %}
+
+        {% else %}
+        <p class="tm-selection-note">
+            No classes assigned yet.
+        </p>
+        {% endif %}
+
+    </section>
+
+    {% if classroom %}
+
+    {% set maximum_total =
+        classroom.assessment_max
+        + classroom.mid_max
+        + classroom.final_max
+    %}
+
+    <section class="tm-marks-panel"
+             aria-labelledby="tm-marks-title">
+
+        <div class="tm-list-heading">
+            <div>
+                <div class="tm-title-row">
+                    <h2 id="tm-marks-title">Student marks</h2>
+                    <span class="tm-count">{{ students|length }}</span>
+                </div>
+
+                <p>Leave an ungraded mark blank.</p>
+            </div>
+
+            <div class="tm-search">
+                <label for="tm-search">Search students</label>
+
+                <input id="tm-search"
+                       type="search"
+                       placeholder="Name or Student ID"
+                       autocomplete="off"
+                       aria-controls="tm-student-list">
+            </div>
+        </div>
+
+        <div class="tm-limits">
+            <span>
+                Assessment
+                <strong>{{ classroom.assessment_max|float }}</strong>
+            </span>
+
+            <span>
+                Midterm
+                <strong>{{ classroom.mid_max|float }}</strong>
+            </span>
+
+            <span>
+                Final
+                <strong>{{ classroom.final_max|float }}</strong>
+            </span>
+
+            <span class="tm-limit-total">
+                Total
+                <strong>{{ maximum_total|float }}</strong>
+            </span>
+        </div>
+
+        <!-- Separate forms allow valid table markup. -->
+        {% for s in students %}
+        <form id="tm-form-{{ s.id }}"
+              method="post"
+              action="{{ url_for('teacher.marks') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <input type="hidden"
+                   name="class_id"
+                   value="{{ classroom.id }}">
+
+            <input type="hidden"
+                   name="student_id"
+                   value="{{ s.id }}">
+        </form>
         {% endfor %}
 
-        <div>
-            <small>Total</small>
+        <div class="tm-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Student</th>
+                        <th scope="col">Assessment</th>
+                        <th scope="col">Midterm</th>
+                        <th scope="col">Final</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
 
-            <b>
-                {% if s.assessment is not none
-                      and s.mid is not none
-                      and s.final is not none %}
+                <tbody id="tm-student-list">
 
-                    {{ (s.assessment+s.mid+s.final)|round(2) }}
+                    {% for s in students %}
+                    <tr data-mark-row
+                        data-mark-search="{{ s.name }} {{ s.student_no or '' }}">
 
-                {% else %}
-                    Incomplete
-                {% endif %}
-            </b>
+                        <td>
+                            <div class="tm-person">
+                                <span class="tm-avatar"
+                                      aria-hidden="true">
+                                    {{ s.name[:1]|upper }}
+                                </span>
+
+                                <div>
+                                    <strong>{{ s.name }}</strong>
+                                    <small>{{ s.student_no or 'No Student ID' }}</small>
+
+                                    {% if not s.active %}
+                                    <span class="tm-disabled-label">
+                                        Account disabled
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        {% for key, label in [
+                            ('assessment', 'Assessment'),
+                            ('mid', 'Midterm'),
+                            ('final', 'Final')
+                        ] %}
+                        <td>
+                            <input class="tm-score-input"
+                                   type="number"
+                                   name="{{ key }}"
+                                   form="tm-form-{{ s.id }}"
+                                   aria-label="{{ label }} marks for {{ s.name }}"
+                                   min="0"
+                                   max="{{ classroom[key ~ '_max'] }}"
+                                   step="any"
+                                   placeholder="—"
+                                   value="{{ s[key] if s[key] is not none else '' }}"
+                                   {% if not s.active %}disabled{% endif %}>
+                        </td>
+                        {% endfor %}
+
+                        <td>
+                            <div class="tm-score-total">
+                                <strong data-total>
+                                    {% if s.assessment is not none
+                                          and s.mid is not none
+                                          and s.final is not none %}
+                                        {{ (s.assessment + s.mid + s.final)|round(2) }}
+                                    {% else %}
+                                        Incomplete
+                                    {% endif %}
+                                </strong>
+
+                                <small>/ {{ maximum_total|float }}</small>
+                            </div>
+                        </td>
+
+                        <td>
+                            <button class="tm-save"
+                                    type="submit"
+                                    form="tm-form-{{ s.id }}"
+                                    aria-label="Save marks for {{ s.name }}"
+                                    {% if not s.active %}disabled{% endif %}>
+                                Save
+                            </button>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                    <tr id="tm-empty-row"
+                        {% if students %}hidden{% endif %}>
+                        <td colspan="6">
+                            <div class="tm-empty">
+                                <span aria-hidden="true">♙</span>
+
+                                <h3 id="tm-empty-title">
+                                    No students enrolled
+                                </h3>
+
+                                <p id="tm-empty-description">
+                                    Students will appear after the admin assigns them.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
         </div>
 
-        <button {% if not s.active %}disabled{% endif %}>
-            Save
-        </button>
+        <div class="tm-footer">
+            <span id="tm-visible-count"
+                  role="status"
+                  aria-live="polite">
+                {{ students|length }} students
+            </span>
 
-    </form>
+            <span>Use Save on each row to store changes.</span>
+        </div>
 
-    {% else %}
-    <p class="empty">No students enrolled.</p>
-    {% endfor %}
+    </section>
 
-</section>
+    {% endif %}
 
-{% endif %}
+</div>
+
+<script>
+(() => {
+    const select = document.getElementById("tm-class-select");
+
+    if (select) {
+        select.addEventListener("change", () => {
+            select.form.requestSubmit();
+        });
+    }
+
+    const search = document.getElementById("tm-search");
+
+    if (!search) {
+        return;
+    }
+
+    const rows = Array.from(
+        document.querySelectorAll("[data-mark-row]")
+    );
+
+    const empty = document.getElementById("tm-empty-row");
+    const emptyTitle = document.getElementById("tm-empty-title");
+    const emptyDescription = document.getElementById(
+        "tm-empty-description"
+    );
+    const count = document.getElementById("tm-visible-count");
+
+    function filterStudents() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+
+        rows.forEach(row => {
+            const matches = row.dataset.markSearch
+                .toLocaleLowerCase()
+                .includes(query);
+
+            row.hidden = !matches;
+
+            if (matches) {
+                visible++;
+            }
+        });
+
+        empty.hidden = visible > 0;
+
+        emptyTitle.textContent = rows.length
+            ? "No matching students"
+            : "No students enrolled";
+
+        emptyDescription.textContent = rows.length
+            ? "Try another name or Student ID."
+            : "Students will appear after the admin assigns them.";
+
+        count.textContent =
+            `Showing ${visible} of ${rows.length} students`;
+    }
+
+    rows.forEach(row => {
+        const inputs = Array.from(
+            row.querySelectorAll(".tm-score-input")
+        );
+        const total = row.querySelector("[data-total]");
+
+        function updateTotal() {
+            const complete = inputs.every(input => (
+                input.value.trim() !== "" &&
+                input.validity.valid &&
+                Number.isFinite(input.valueAsNumber)
+            ));
+
+            total.textContent = complete
+                ? String(Number(
+                    inputs.reduce(
+                        (sum, input) => sum + input.valueAsNumber,
+                        0
+                    ).toFixed(2)
+                ))
+                : "Incomplete";
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener("input", updateTotal);
+        });
+    });
+
+    search.addEventListener("input", filterStudents);
+    filterStudents();
+})();
+</script>
 
 {% endblock %}

@@ -1,0 +1,586 @@
+/* Teacher Student Details */
+
+.ts-page {
+    --ts-ink: #26334b;
+    --ts-muted: #7c879d;
+    --ts-border: #e3e8f2;
+    --ts-accent: #6957d8;
+
+    width: 100%;
+    color: var(--ts-ink);
+}
+
+.ts-page *,
+.ts-page *::before,
+.ts-page *::after {
+    box-sizing: border-box;
+}
+
+.ts-page [hidden] {
+    display: none !important;
+}
+
+/* Header */
+
+.ts-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-bottom: 26px;
+}
+
+.ts-eyebrow {
+    display: block;
+    margin-bottom: 10px;
+    color: #7a68c6;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.7px;
+}
+
+.ts-heading h1 {
+    margin: 0 0 10px;
+    color: var(--ts-ink);
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.3;
+    letter-spacing: -.7px;
+}
+
+.ts-heading p {
+    margin: 0;
+    color: var(--ts-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.ts-total {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 205px;
+    padding: 17px 22px;
+    border: 1px solid #e4def5;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(64, 48, 115, .035);
+}
+
+.ts-total-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #eee9fc;
+    color: #7960cc;
+    font-size: 25px;
+}
+
+.ts-total strong {
+    display: block;
+    color: #51418a;
+    font-size: 26px;
+    line-height: 1.2;
+}
+
+.ts-total div > span {
+    display: block;
+    margin-top: 5px;
+    color: var(--ts-muted);
+    font-size: 11px;
+}
+
+/* Classroom */
+
+.ts-class-panel {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+    padding: 26px;
+    border: 1px solid #dfdff1;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #f3f0ff, #f4f8ff);
+}
+
+.ts-class-panel::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, #8062da, #7ba8e9);
+    content: "";
+}
+
+.ts-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.ts-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 43px;
+    height: 43px;
+    border: 1px solid #e1d8f6;
+    border-radius: 12px;
+    background: #eae3fb;
+    color: #7959c8;
+    font-size: 24px;
+}
+
+.ts-panel-title h2 {
+    margin: 0 0 5px;
+    color: #413758;
+    font-size: 18px;
+}
+
+.ts-panel-title p {
+    margin: 0;
+    color: #87819c;
+    font-size: 12px;
+}
+
+.ts-picker {
+    margin: 0;
+}
+
+.ts-picker > label,
+.ts-search label {
+    display: block;
+    margin-bottom: 8px;
+    color: #606b82;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ts-picker-controls {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.ts-picker select {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    min-height: 46px;
+    padding: 11px 14px;
+    border: 1px solid #d9dcec;
+    border-radius: 10px;
+    background: #fff;
+    color: #36415a;
+    font: inherit;
+    font-size: 13px;
+}
+
+.ts-page .ts-button {
+    flex-shrink: 0;
+    padding: 11px 19px;
+    border: 1px solid #6957d8;
+    border-radius: 10px;
+    background: #6957d8;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ts-page .ts-button:hover {
+    background: #5a48c4;
+}
+
+.ts-picker-note {
+    margin: 9px 0 0;
+    color: #88859b;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.ts-selected-class {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e0ddf0;
+}
+
+.ts-class-code {
+    padding: 6px 10px;
+    border: 1px solid #ded5f5;
+    border-radius: 7px;
+    background: #fff;
+    color: #7658b9;
+    font-size: 11px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.ts-selected-class > strong {
+    color: #514866;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.ts-assigned {
+    margin-left: auto;
+    color: #8b839d;
+    font-size: 11px;
+}
+
+/* Student list */
+
+.ts-students-panel {
+    overflow: hidden;
+    border: 1px solid var(--ts-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(38, 54, 88, .035);
+}
+
+.ts-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 24px;
+}
+
+.ts-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ts-title-row h2 {
+    margin: 0;
+    font-size: 19px;
+}
+
+.ts-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 29px;
+    height: 25px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: #eeeafb;
+    color: #7a60c4;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ts-list-heading p {
+    margin: 8px 0 0;
+    color: var(--ts-muted);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.ts-search {
+    width: 270px;
+    max-width: 100%;
+}
+
+.ts-search input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid #e0e5ef;
+    border-radius: 10px;
+    background: #fafbfe;
+    color: var(--ts-ink);
+    font: inherit;
+    font-size: 12px;
+}
+
+.ts-search input::placeholder {
+    color: #9aa3b4;
+}
+
+/* Table */
+
+.ts-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ts-page table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    white-space: normal;
+}
+
+.ts-page th {
+    padding: 14px 22px;
+    border-top: 1px solid #edf0f6;
+    border-bottom: 1px solid #edf0f6;
+    background: #f8f9fd;
+    color: #8993a7;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.ts-page td {
+    padding: 19px 22px;
+    border-bottom: 1px solid #eef1f7;
+    color: #778196;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.ts-page tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ts-page tbody tr:hover {
+    background: #fcfbff;
+}
+
+.ts-person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 180px;
+}
+
+.ts-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 39px;
+    height: 39px;
+    border-radius: 12px;
+    background: #eee9fc;
+    color: #7c61c4;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ts-person strong {
+    color: #38435a;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.ts-student-id {
+    display: inline-block;
+    padding: 5px 9px;
+    border: 1px solid #e4e9f3;
+    border-radius: 7px;
+    background: #f5f7fc;
+    color: #65738d;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.ts-email {
+    color: #6d79a1;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.ts-email:hover {
+    color: #6957d8;
+    text-decoration: underline;
+}
+
+.ts-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ts-status > span {
+    font-size: 8px;
+}
+
+.ts-status.is-active {
+    background: #e7f6ee;
+    color: #398266;
+}
+
+.ts-status.is-disabled {
+    background: #fcecef;
+    color: #b16a79;
+}
+
+.ts-list-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid #edf0f6;
+    background: #fcfcfe;
+    color: #8b95a8;
+    font-size: 11px;
+}
+
+/* Empty states */
+
+.ts-empty {
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.ts-empty > span {
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    background: #eeebf8;
+    color: #9a89c6;
+    font-size: 25px;
+}
+
+.ts-empty h3 {
+    margin: 0 0 8px;
+    color: #626b80;
+    font-size: 15px;
+}
+
+.ts-empty p {
+    margin: 0;
+    color: #9199aa;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Focus */
+
+.ts-page input:focus,
+.ts-page select:focus {
+    outline: none;
+    border-color: #ac9be2;
+    box-shadow: 0 0 0 3px rgba(105, 87, 216, .09);
+}
+
+.ts-page button:focus-visible,
+.ts-page a:focus-visible {
+    outline: 3px solid #b4a6ed;
+    outline-offset: 4px;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+    .ts-heading {
+        align-items: flex-start;
+    }
+
+    .ts-total {
+        width: 100%;
+    }
+
+    .ts-class-panel,
+    .ts-list-heading {
+        padding: 20px 16px;
+    }
+
+    .ts-picker-controls {
+        flex-direction: column;
+    }
+
+    .ts-page .ts-button {
+        width: 100%;
+    }
+
+    .ts-search {
+        width: 100%;
+    }
+
+    .ts-assigned {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .ts-page th,
+    .ts-page td {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .ts-list-footer {
+        padding: 16px;
+    }
+}
+/* Compact classroom box */
+.ts-page .ts-class-panel {
+    padding: 18px 22px;
+    border-radius: 14px;
+}
+
+.ts-page .ts-panel-title {
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.ts-page .ts-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 21px;
+}
+
+.ts-page .ts-panel-title h2 {
+    font-size: 16px;
+}
+
+.ts-page .ts-picker select {
+    min-height: 40px;
+    padding: 9px 12px;
+}
+
+.ts-page .ts-button {
+    padding: 9px 15px;
+}
+
+.ts-page .ts-picker-note {
+    margin-top: 7px;
+}
+
+.ts-page .ts-class-panel .ts-empty {
+    padding: 16px 10px 4px;
+}
+
+.ts-page .ts-class-panel .ts-empty > span {
+    display: none;
+}
+
+.ts-page .ts-class-panel .ts-empty h3 {
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.ts-page .ts-class-panel .ts-empty p {
+    font-size: 11px;
+}
+
+.ts-page .ts-selected-class {
+    margin-top: 14px;
+    padding-top: 12px;
+}
+
+@media (max-width: 700px) {
+    .ts-page .ts-class-panel {
+        padding: 16px;
+    }
+}

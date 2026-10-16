@@ -4,85 +4,237 @@
 
 {% block content %}
 
-<h1>My Attendance</h1>
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/my-attendance.css', v='1') }}">
 
-<p class="muted">
-    Your daily check-in and check-out, recorded in {{ campus_timezone }}.
-</p>
+<div class="ma-page">
 
-<section class="panel">
+    <header class="ma-heading">
+        <div>
+            <span class="ma-eyebrow">TEACHER WORKSPACE</span>
+            <h1>My Attendance</h1>
+            <p>Your daily check-in, check-out and attendance history.</p>
+        </div>
 
-    <h2>{{ today }}</h2>
+        <span class="ma-timezone">
+            ◷ {{ campus_timezone }}
+        </span>
+    </header>
 
-    <p>
-        Check-in:
-        <b>{{ record.check_in|campus_time if record else '—' }}</b>
+    <section class="ma-card" aria-labelledby="ma-today-heading">
 
-        · Check-out:
-        <b>{{ record.check_out|campus_time if record else '—' }}</b>
-    </p>
+        <div class="ma-card-heading">
+            <div>
+                <span class="ma-eyebrow">DAILY ATTENDANCE</span>
+                <h2 id="ma-today-heading">Today's attendance</h2>
+                <p>{{ today }}</p>
+            </div>
 
-    <form method="post" class="inline">
-
-        <input type="hidden"
-               name="csrf_token"
-               value="{{ csrf_token() }}">
-
-        <button name="action"
-                value="in"
-                {% if record %}disabled{% endif %}>
-            Check in
-        </button>
-
-        <button class="secondary"
-                name="action"
-                value="out"
-                {% if not record or record.check_out is not none %}disabled{% endif %}>
-            Check out
-        </button>
-
-    </form>
-
-</section>
-
-<section class="panel table-wrap">
-
-    <h2>Recent attendance</h2>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Duration</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for r in history %}
-            <tr>
-                <td>{{ r.work_date }}</td>
-                <td>{{ r.check_in|campus_time }}</td>
-                <td>{{ r.check_out|campus_time }}</td>
-
-                <td>
-                    {% if r.check_out is not none %}
-                        {{ ((r.check_out-r.check_in)/3600)|round(2) }} hours
-                    {% else %}
-                        Not checked out
-                    {% endif %}
-                </td>
-            </tr>
-
+            {% if record and record.check_out is not none %}
+                <span class="ma-badge completed">Completed</span>
+            {% elif record %}
+                <span class="ma-badge working">Checked in</span>
             {% else %}
-            <tr>
-                <td colspan="4">No attendance recorded yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <span class="ma-badge">Not checked in</span>
+            {% endif %}
+        </div>
 
-</section>
+        <div class="ma-time-grid">
+
+            <article class="ma-time-box">
+                <span class="ma-time-icon" aria-hidden="true">↘</span>
+
+                <div>
+                    <span class="ma-label">Check-in time</span>
+
+                    <strong>
+                        {{ record.check_in|campus_time
+                           if record else '—' }}
+                    </strong>
+
+                    <small>Start of your workday</small>
+                </div>
+            </article>
+
+            <article class="ma-time-box checkout">
+                <span class="ma-time-icon" aria-hidden="true">↗</span>
+
+                <div>
+                    <span class="ma-label">Check-out time</span>
+
+                    <strong>
+                        {{ record.check_out|campus_time
+                           if record and record.check_out is not none
+                           else '—' }}
+                    </strong>
+
+                    <small>End of your workday</small>
+                </div>
+            </article>
+
+            <article class="ma-time-box duration">
+                <span class="ma-time-icon" aria-hidden="true">◷</span>
+
+                <div>
+                    <span class="ma-label">Working duration</span>
+
+                    <strong>
+                        {% if record and record.check_out is not none %}
+                            {% set minutes =
+                                ((record.check_out - record.check_in) / 60)|int %}
+                            {{ minutes // 60 }}h {{ minutes % 60 }}m
+                        {% elif record %}
+                            In progress
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+
+                    <small>Calculated after check-out</small>
+                </div>
+            </article>
+
+        </div>
+
+        <div class="ma-action-bar">
+
+            <p>
+                {% if record and record.check_out is not none %}
+                    Your attendance has been recorded for today.
+                {% elif record %}
+                    You are checked in. Check out when your workday ends.
+                {% else %}
+                    Ready to begin? Record your check-in below.
+                {% endif %}
+            </p>
+
+            <form method="post"
+                  action="{{ url_for('teacher.my_attendance') }}"
+                  class="ma-actions">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <button type="submit"
+                        name="action"
+                        value="in"
+                        class="ma-button"
+                        {% if record %}disabled{% endif %}>
+                    ↘ Check in
+                </button>
+
+                <button type="submit"
+                        name="action"
+                        value="out"
+                        class="ma-button secondary"
+                        {% if not record or record.check_out is not none %}
+                            disabled
+                        {% endif %}>
+                    ↗ Check out
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <section class="ma-card ma-history"
+             aria-labelledby="ma-history-heading">
+
+        <div class="ma-card-heading">
+            <div>
+                <span class="ma-eyebrow">ATTENDANCE LOG</span>
+                <h2 id="ma-history-heading">Recent attendance</h2>
+                <p>Your latest recorded working days.</p>
+            </div>
+
+            <span class="ma-record-count">
+                {{ history|length }} records
+            </span>
+        </div>
+
+        <div class="ma-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Check-in</th>
+                        <th scope="col">Check-out</th>
+                        <th scope="col">Duration</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in history %}
+                    <tr>
+                        <td>
+                            <strong class="ma-date">
+                                {{ row.work_date }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ row.check_in|campus_time }}
+                        </td>
+
+                        <td>
+                            {{ row.check_out|campus_time
+                               if row.check_out is not none else '—' }}
+                        </td>
+
+                        <td>
+                            {% if row.check_out is not none %}
+                                {% set minutes =
+                                    ((row.check_out - row.check_in) / 60)|int %}
+
+                                <span class="ma-duration">
+                                    {{ minutes // 60 }}h {{ minutes % 60 }}m
+                                </span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.check_out is not none %}
+                                <span class="ma-badge completed">
+                                    Completed
+                                </span>
+                            {% elif row.work_date == today %}
+                                <span class="ma-badge working">
+                                    In progress
+                                </span>
+                            {% else %}
+                                <span class="ma-badge pending">
+                                    No check-out
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="ma-empty">
+                                <span aria-hidden="true">◷</span>
+                                <h3>No attendance records yet</h3>
+                                <p>Your records will appear after your first check-in.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ma-history-footer">
+            All times are shown in {{ campus_timezone }}.
+        </div>
+
+    </section>
+
+</div>
 
 {% endblock %}

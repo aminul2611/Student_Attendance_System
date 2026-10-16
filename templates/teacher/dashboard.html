@@ -4,107 +4,618 @@
 
 {% block content %}
 
-<div class="heading">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='teacher/dashboard.css', v='8') }}">
 
-    <div>
-        <h1>Welcome, {{ g.user.name }}!</h1>
-        <p>Your classes, students and teaching tools.</p>
+<style>
+    /* Match the two panels */
+    .td-dashboard .td-content > .td-today-panel,
+    .td-dashboard .td-content > .td-dashboard-notices {
+        width: 100%;
+        margin: 0 0 24px;
+        padding: 24px;
+        border: 1px solid #e0e5ef;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 6px 22px rgba(40, 55, 90, .04);
+    }
+
+    .td-dashboard .td-today-panel::before,
+    .td-dashboard .td-dashboard-notices::before {
+        display: none;
+    }
+
+    .td-dashboard .td-today-panel .td-panel-heading {
+        margin-bottom: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #edf0f6;
+    }
+
+    .td-dashboard #td-today-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 9px;
+        color: #27354b;
+        font-size: 20px;
+    }
+
+    .td-dashboard #td-today-title::before {
+        display: inline-grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 12px;
+        background: #e5f5ed;
+        color: #258567;
+        font-size: 23px;
+        content: "◷";
+    }
+
+    .td-dashboard .td-today-panel .td-panel-heading p {
+        margin: 0;
+        color: #748098;
+        font-size: 13px;
+    }
+
+    .td-dashboard .td-today-panel .td-empty {
+        display: block;
+        margin: 0;
+        padding: 24px 16px;
+        border: 1px dashed #dce5e0;
+        border-radius: 12px;
+        background: #f8fbf9;
+        color: #62786d;
+        text-align: center;
+    }
+
+    .td-dashboard .td-today-panel .td-empty::before {
+        display: none;
+    }
+
+    .td-dashboard .td-dashboard-notices .panel {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .td-dashboard .td-dashboard-notices h2,
+    .td-dashboard .td-dashboard-notices h3 {
+        margin: 0 0 18px;
+        padding-bottom: 18px;
+        color: #27354b;
+        font-size: 20px;
+        border-bottom: 1px solid #edf0f6;
+    }
+
+    .td-dashboard .td-dashboard-notices h2::before,
+    .td-dashboard .td-dashboard-notices h3::before {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 12px;
+        background: #eee8fc;
+        color: #7754c5;
+    }
+
+    .td-dashboard .td-dashboard-notices details {
+        margin: 12px 0 0;
+        padding: 18px;
+        border: 1px solid #e6e1f1;
+        border-radius: 12px;
+        background: #fcfbff;
+        box-shadow: none;
+    }
+
+    .td-dashboard .td-dashboard-notices summary {
+        position: relative;
+        display: block;
+        min-height: 32px;
+        padding: 0 40px 0 0;
+        color: #352e49;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.7;
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .td-dashboard .td-dashboard-notices summary::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 28px;
+        height: 28px;
+        background: #eee8fc;
+        color: #7754c5;
+    }
+
+    .td-dashboard .td-dashboard-notices details[open] > summary {
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eae5f3;
+    }
+
+    .td-dashboard .td-dashboard-notices summary small,
+    .td-dashboard .td-dashboard-notices summary time {
+        display: block;
+        margin-top: 6px;
+        color: #72788b;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .td-dashboard .td-dashboard-notices details > p,
+    .td-dashboard .td-dashboard-notices details > div {
+        color: #354057;
+        font-size: 14px;
+        line-height: 1.9;
+        overflow-wrap: anywhere;
+    }
+
+    .td-dashboard .td-dashboard-notices details > p {
+        white-space: pre-wrap;
+    }
+
+    @media (max-width: 700px) {
+        .td-dashboard .td-content > .td-today-panel,
+        .td-dashboard .td-content > .td-dashboard-notices {
+            padding: 20px 16px;
+        }
+    }
+</style>
+
+<div class="td-dashboard">
+
+    <div class="td-layout">
+
+        <div class="td-content">
+
+            <div class="td-heading">
+                <div>
+                    <h1>Welcome, {{ g.user.name }}!</h1>
+                    <p>Your classes, students and teaching tools.</p>
+                </div>
+
+                <a class="button"
+                   href="{{ url_for('teacher.my_attendance') }}">
+                    My attendance
+                </a>
+            </div>
+
+            <h2 class="td-section-title">Teaching tools</h2>
+
+            <div class="td-tools">
+
+                {% for endpoint, label, symbol, color in [
+                    ('teacher.students', 'Student Details', 'S', 'blue'),
+                    ('teacher.attendance', 'Manual Attendance', 'A', 'green'),
+                    ('teacher.classes', 'Daily Classes', 'C', 'orange')
+                ] %}
+                <a class="td-card"
+                   href="{{ url_for(endpoint) }}">
+
+                    <span class="td-icon {{ color }}"
+                          aria-hidden="true">{{ symbol }}</span>
+
+                    <h3>{{ label }}</h3>
+                    <span class="link">Open section →</span>
+                </a>
+                {% endfor %}
+
+            </div>
+
+            <section class="td-panel"
+                     aria-labelledby="td-classes-title">
+
+                <div class="td-panel-heading">
+                    <div>
+                        <h2 id="td-classes-title">My classes</h2>
+                        <p>Your assigned classes and subjects.</p>
+                    </div>
+
+                    <span class="td-badge">
+                        {{ classes|length }}
+                        {{ 'class' if classes|length == 1 else 'classes' }}
+                    </span>
+                </div>
+
+                <div class="td-class-grid"
+                     id="td-class-list">
+
+                    {% for c in classes %}
+                    <a class="td-card"
+                       data-class-card
+                       href="{{ url_for('teacher.students', class_id=c.id) }}">
+
+                        <span class="td-icon"
+                              aria-hidden="true">▤</span>
+
+                        <small>{{ c.code }}</small>
+                        <h3>{{ c.name }}</h3>
+
+                        <span class="link">Open class →</span>
+                    </a>
+                    {% else %}
+                    <p class="td-empty">
+                        No classes assigned yet.
+                    </p>
+                    {% endfor %}
+
+                </div>
+
+                {% if classes|length > 3 %}
+                <nav class="td-pagination"
+                     id="td-class-pagination"
+                     aria-label="Class pages"
+                     hidden>
+
+                    <button type="button"
+                            id="td-class-prev"
+                            class="td-page-button"
+                            aria-controls="td-class-list"
+                            disabled>
+                        ‹ Previous
+                    </button>
+
+                    <span id="td-class-page"
+                          role="status"
+                          aria-live="polite"></span>
+
+                    <button type="button"
+                            id="td-class-next"
+                            class="td-page-button"
+                            aria-controls="td-class-list">
+                        Next ›
+                    </button>
+
+                </nav>
+                {% endif %}
+
+            </section>
+
+            <section class="td-panel td-today-panel"
+                     aria-labelledby="td-today-title">
+
+                <div class="td-panel-heading">
+                    <div>
+                        <h2 id="td-today-title">Today's classes</h2>
+                        <p>Your scheduled sessions for today.</p>
+                    </div>
+                </div>
+
+                {% for lesson in daily %}
+                <a class="td-lesson"
+                   href="{{ url_for('teacher.attendance', class_id=lesson.class_id, lesson_id=lesson.id) }}">
+
+                    <span>
+                        <strong>{{ lesson.name }}</strong>
+                        <small>
+                            {{ lesson.topic or 'Class session' }}
+                            · {{ lesson.room or 'Room not set' }}
+                        </small>
+                    </span>
+
+                    <strong class="td-lesson-time">
+                        {{ lesson.start_time }} – {{ lesson.end_time }}
+                    </strong>
+
+                </a>
+                {% else %}
+                <p class="td-empty">
+                    No classes scheduled for today.
+                </p>
+                {% endfor %}
+
+            </section>
+
+            <section class="td-dashboard-notices"
+                     aria-label="Campus notices">
+                {% include 'shared/notices.html' %}
+            </section>
+
+        </div>
+
+        <aside class="td-side"
+               aria-label="Clock and calendar">
+
+            <div class="td-widget">
+
+                <div class="td-clock">
+                    <p class="td-clock-label">Campus time</p>
+
+                    <time id="td-clock-time"
+                          class="td-clock-time">—</time>
+
+                    <p id="td-clock-date"
+                       class="td-clock-date"></p>
+                </div>
+
+                <section class="td-calendar"
+                         aria-label="Monthly calendar">
+
+                    <div class="td-calendar-heading">
+
+                        <button id="td-prev-month"
+                                class="td-calendar-arrow"
+                                type="button"
+                                aria-label="Previous month">
+                            ‹
+                        </button>
+
+                        <h2 id="td-calendar-title"
+                            aria-live="polite"></h2>
+
+                        <button id="td-next-month"
+                                class="td-calendar-arrow"
+                                type="button"
+                                aria-label="Next month">
+                            ›
+                        </button>
+
+                    </div>
+
+                    <div class="td-calendar-grid"
+                         aria-hidden="true">
+                        <span class="td-weekday">Su</span>
+                        <span class="td-weekday">Mo</span>
+                        <span class="td-weekday">Tu</span>
+                        <span class="td-weekday">We</span>
+                        <span class="td-weekday">Th</span>
+                        <span class="td-weekday">Fr</span>
+                        <span class="td-weekday">Sa</span>
+                    </div>
+
+                    <div id="td-calendar-days"
+                         class="td-calendar-grid"></div>
+
+                    <div class="td-calendar-footer">
+                        <span>Highlighted: today</span>
+
+                        <button id="td-calendar-today"
+                                class="td-today-button"
+                                type="button">
+                            Today
+                        </button>
+                    </div>
+
+                </section>
+
+            </div>
+
+        </aside>
+
     </div>
 
-    <a class="button"
-       href="{{ url_for('teacher.my_attendance') }}">
-        My attendance
-    </a>
-
 </div>
 
-<h2>Teaching tools</h2>
+<script>
+(() => {
+    /* Show notice details initially.
+       Teachers can still collapse them. */
+    document.querySelectorAll(
+        ".td-dashboard-notices details"
+    ).forEach(notice => {
+        notice.open = true;
+    });
 
-<div class="cards tool-cards">
+    const cards = Array.from(
+        document.querySelectorAll(
+            "#td-class-list [data-class-card]"
+        )
+    );
 
-    {% for endpoint, label, symbol, color in [
-        ('teacher.students', 'Student Details', 'S', 'blue'),
-        ('teacher.attendance', 'Manual Attendance', 'A', 'green'),
-        ('teacher.classes', 'Daily Classes', 'C', 'orange')
-    ] %}
+    const pagination = document.getElementById(
+        "td-class-pagination"
+    );
+    const previous = document.getElementById("td-class-prev");
+    const next = document.getElementById("td-class-next");
+    const pageLabel = document.getElementById("td-class-page");
 
-    <a class="card"
-       data-search="{{ label }}"
-       href="{{ url_for(endpoint) }}">
+    if (!pagination || !previous || !next || !pageLabel) {
+        return;
+    }
 
-        <span class="card-icon {{ color }}">
-            {{ symbol }}
-        </span>
+    const pageSize = 3;
+    const totalPages = Math.ceil(cards.length / pageSize);
+    let currentPage = 1;
 
-        <h3>{{ label }}</h3>
-        <span class="link">Open section →</span>
+    function showPage() {
+        const start = (currentPage - 1) * pageSize;
 
-    </a>
+        cards.forEach((card, index) => {
+            card.hidden = (
+                index < start || index >= start + pageSize
+            );
+        });
 
-    {% endfor %}
+        pageLabel.textContent =
+            `Page ${currentPage} of ${totalPages}`;
 
-</div>
+        previous.disabled = currentPage === 1;
+        next.disabled = currentPage === totalPages;
+    }
 
-<h2>My classes</h2>
+    previous.addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage();
+        }
+    });
 
-<div class="cards">
+    next.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            showPage();
+        }
+    });
 
-    {% for c in classes %}
+    showPage();
+    pagination.hidden = false;
+})();
+</script>
 
-    <a class="card"
-       data-search="{{ c.code }} {{ c.name }}"
-       href="{{ url_for('teacher.students', class_id=c.id) }}">
+<script>
+(() => {
+    let timezone = document.body.dataset.timezone || "UTC";
 
-        <span class="card-icon">▤</span>
+    try {
+        new Intl.DateTimeFormat("en-US", {
+            timeZone: timezone
+        }).format();
+    } catch {
+        timezone = "UTC";
+    }
 
-        <small>{{ c.code }}</small>
-        <h3>{{ c.name }}</h3>
+    const clock = document.getElementById("td-clock-time");
+    const dateLabel = document.getElementById("td-clock-date");
+    const monthTitle = document.getElementById("td-calendar-title");
+    const daysContainer = document.getElementById("td-calendar-days");
 
-        <span class="link">Open class →</span>
+    const timeFormat = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
 
-    </a>
+    const dateFormat = new Intl.DateTimeFormat("en-GB", {
+        timeZone: timezone,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
 
-    {% else %}
+    const partsFormat = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric"
+    });
 
-    <p class="empty">No classes assigned yet.</p>
+    const monthFormat = new Intl.DateTimeFormat("en-US", {
+        timeZone: "UTC",
+        month: "long",
+        year: "numeric"
+    });
 
-    {% endfor %}
+    function campusDate(now = new Date()) {
+        const parts = {};
 
-</div>
+        for (const part of partsFormat.formatToParts(now)) {
+            if (part.type !== "literal") {
+                parts[part.type] = Number(part.value);
+            }
+        }
 
-<section class="panel">
+        return {
+            year: parts.year,
+            month: parts.month - 1,
+            day: parts.day
+        };
+    }
 
-    <h2>Today's classes</h2>
+    const initialDate = campusDate();
 
-    {% for l in daily %}
+    let viewYear = initialDate.year;
+    let viewMonth = initialDate.month;
+    let lastToday = "";
 
-    <a class="list-row"
-       data-search="{{ l.name }} {{ l.topic }}"
-       href="{{ url_for('teacher.attendance', class_id=l.class_id, lesson_id=l.id) }}">
+    function renderCalendar() {
+        const today = campusDate();
 
-        <span>
-            <b>{{ l.name }}</b>
+        const firstDay = new Date(
+            Date.UTC(viewYear, viewMonth, 1)
+        ).getUTCDay();
 
-            <small>
-                {{ l.topic or 'Class session' }}
-                · {{ l.room or 'Room not set' }}
-            </small>
-        </span>
+        const dayCount = new Date(
+            Date.UTC(viewYear, viewMonth + 1, 0)
+        ).getUTCDate();
 
-        <strong>
-            {{ l.start_time }} – {{ l.end_time }}
-        </strong>
+        monthTitle.textContent = monthFormat.format(
+            new Date(Date.UTC(viewYear, viewMonth, 1))
+        );
 
-    </a>
+        daysContainer.replaceChildren();
 
-    {% else %}
+        for (let index = 0; index < firstDay; index++) {
+            const blank = document.createElement("span");
+            blank.setAttribute("aria-hidden", "true");
+            daysContainer.appendChild(blank);
+        }
 
-    <p class="empty">
-        No classes scheduled for today.
-    </p>
+        for (let day = 1; day <= dayCount; day++) {
+            const cell = document.createElement("span");
 
-    {% endfor %}
+            cell.className = "td-day";
+            cell.textContent = day;
 
-</section>
+            if (
+                viewYear === today.year &&
+                viewMonth === today.month &&
+                day === today.day
+            ) {
+                cell.classList.add("td-today");
+                cell.setAttribute("aria-current", "date");
+            }
+
+            daysContainer.appendChild(cell);
+        }
+    }
+
+    function updateClock() {
+        const now = new Date();
+
+        clock.textContent = timeFormat.format(now);
+        clock.dateTime = now.toISOString();
+        dateLabel.textContent = dateFormat.format(now);
+
+        const today = campusDate(now);
+        const todayKey =
+            `${today.year}-${today.month}-${today.day}`;
+
+        if (todayKey !== lastToday) {
+            lastToday = todayKey;
+            renderCalendar();
+        }
+    }
+
+    function changeMonth(amount) {
+        const target = new Date(
+            Date.UTC(viewYear, viewMonth + amount, 1)
+        );
+
+        viewYear = target.getUTCFullYear();
+        viewMonth = target.getUTCMonth();
+
+        renderCalendar();
+    }
+
+    document.getElementById("td-prev-month")
+        .addEventListener("click", () => changeMonth(-1));
+
+    document.getElementById("td-next-month")
+        .addEventListener("click", () => changeMonth(1));
+
+    document.getElementById("td-calendar-today")
+        .addEventListener("click", () => {
+            const today = campusDate();
+
+            viewYear = today.year;
+            viewMonth = today.month;
+
+            renderCalendar();
+        });
+
+    updateClock();
+    setInterval(updateClock, 1000);
+})();
+</script>
 
 {% endblock %}
